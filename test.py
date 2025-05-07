@@ -346,3 +346,83 @@ plt.tight_layout()
 plt.savefig('images/step2_vars_by_pillar.png', bbox_inches='tight')
 print("\nVariables by pillar visualization saved to images/step2_vars_by_pillar.png")
 
+#############################################################
+# SECTION 6: MISSING DATA HANDLING AND THRESHOLDS
+#############################################################
+
+# STEP 2.5: Apply different missing thresholds by pillar
+# Higher threshold for Crime Indicators (60%) vs. other pillars (40%)
+high_missing = []
+crime_indicators = [var for var in pillars['Crime Indicators']['vars'] if var in df_shortlist.columns]
+
+# Split into crime and non-crime variables
+crime_vars_missing = missing_df_shortlist[missing_df_shortlist['Variable'].isin(crime_indicators)]
+non_crime_vars_missing = missing_df_shortlist[~missing_df_shortlist['Variable'].isin(crime_indicators)]
+
+# Apply appropriate thresholds
+crime_high_missing = crime_vars_missing[crime_vars_missing['Missing %'] > 60]['Variable'].tolist()
+non_crime_high_missing = non_crime_vars_missing[non_crime_vars_missing['Missing %'] > 40]['Variable'].tolist()
+
+# Combine the lists
+high_missing = crime_high_missing + non_crime_high_missing
+
+print(f"\nVariables with more than 40% missing (non-crime) or 60% missing (crime) to be dropped: {high_missing}")
+
+# Save dropped variables due to high missingness
+high_missing_df = pd.concat([
+    crime_vars_missing[crime_vars_missing['Missing %'] > 60],
+    non_crime_vars_missing[non_crime_vars_missing['Missing %'] > 40]
+])
+high_missing_df.to_csv('step2_dropped_missing.csv', index=False)
+print("High missing variables saved to step2_dropped_missing.csv")
+
+# Drop variables with high missing percentages
+df_cleaned = df_shortlist.drop(columns=high_missing)
+
+# STEP 2.6: Impute remaining missing values by pillar
+# For this example, we'll use median imputation within each pillar
+for pillar, data in pillars.items():
+    pillar_vars = [var for var in data['vars'] if var in df_cleaned.columns]
+    num_pillar_vars = [var for var in pillar_vars if var in df_cleaned.select_dtypes(include=['number']).columns]
+    
+    if num_pillar_vars:
+        print(f"Imputing missing values for {pillar} variables using median imputation...")
+        # Impute numeric variables with median
+        df_cleaned[num_pillar_vars] = df_cleaned[num_pillar_vars].fillna(df_cleaned[num_pillar_vars].median())
+
+# Create a complete correlation matrix of all variables after pruning for missing data
+numeric_cols_after_missing = df_cleaned.select_dtypes(include=['number']).columns
+corr_after_missing = df_cleaned[numeric_cols_after_missing].corr()
+
+# STEP 2.7: Generate a heatmap visualization
+plt.figure(figsize=(28, 24))  # Adjusted figure size
+mask = np.triu(np.ones_like(corr_after_missing, dtype=bool))
+cmap = sns.diverging_palette(250, 15, s=75, l=40, n=9, center="light", as_cmap=True)  # Professional diverging palette
+
+sns.heatmap(corr_after_missing, mask=mask, cmap=cmap, center=0,
+            square=True, linewidths=.5, cbar_kws={"shrink": .6, "label": "Pearson Correlation"})
+
+plt.title('Complete Correlation Matrix (Post Missing Data Pruning, Pre-Collinearity Removal)', fontsize=22, fontweight='bold')
+plt.xticks(fontsize=8, rotation=90)
+plt.yticks(fontsize=8)
+plt.tight_layout(pad=2.0)
+plt.savefig('images/step2_complete_correlation_after_missing.png', bbox_inches='tight')
+print("\nComplete correlation matrix after missing data pruning saved to images/step2_complete_correlation_after_missing.png")
+
+# Create a clustered correlation matrix for better pattern visualization
+clustergrid = sns.clustermap(
+    corr_after_missing, 
+    cmap=cmap,  # Use the same professional cmap
+    center=0,
+    linewidths=.5, 
+    figsize=(28, 28),  # Adjusted figure size
+    dendrogram_ratio=(0.05, 0.05),  # Adjust dendrogram ratios
+    cbar_pos=(0.02, 0.8, 0.03, 0.18),  # Reposition colorbar
+    cbar_kws={"label": "Pearson Correlation"},
+    xticklabels=True, yticklabels=True
+)
+clustergrid.ax_heatmap.set_title('Clustered Correlation Matrix (Post Missing Data Pruning)', fontsize=22, fontweight='bold', pad=20)
+clustergrid.ax_heatmap.tick_params(axis='x', labelsize=8, rotation=90)
+clustergrid.ax_heatmap.tick_params(axis='y', labelsize=8)
+plt.savefig('images/step2_clustered_correlation_after_missing.png', bbox_inches='tight')
+print("\nClustered correlation matrix after missing data pruning saved to images/step2_clustered_correlation_after_missing.png")
