@@ -251,3 +251,98 @@ pillar_counts = variable_map[variable_map['Keep?'] == 'Y'].groupby('Pillar').siz
 pillar_counts.to_csv('step2_shortlist_counts.csv', index=False)
 print(f"\nInitial theory-driven shortlist created with {len(shortlisted_vars)} variables")
 print(pillar_counts)
+
+#############################################################
+# SECTION 5: VARIABLE ANALYSIS AND CLASSIFICATION
+#############################################################
+
+# STEP 2.2: Calculate missing percentages after cleanup
+missing_df_shortlist = missing_percentage(df_shortlist)
+
+# Plot top 15 missing variables
+plt.figure(figsize=(14, 10))
+missing_plot_data = missing_df_shortlist.head(15).sort_values('Missing %')
+ax = sns.barplot(x='Missing %', y='Variable', data=missing_plot_data, palette='mako')
+plt.title('Top 15 Variables with Highest Missing Data', fontsize=18, fontweight='bold')
+plt.xlabel('Missing Percentage (%)')
+plt.ylabel('Variable')
+# Add value labels to bars
+for p in ax.patches:
+    width = p.get_width()
+    plt.text(width + 0.5, p.get_y() + p.get_height()/2. + 0.1,
+             f'{width:.1f}%', ha='left', va='center')
+plt.tight_layout()
+plt.savefig('images/step2_missing_top15.png', bbox_inches='tight')
+print("\nMissing data visualization saved to images/step2_missing_top15.png")
+
+# STEP 2.3: Type & proxy summary
+# Define variable types and proxy status
+var_types = {}
+proxy_status = {}
+
+for var in df_shortlist.columns:
+    # Determine variable type (Hard/Soft)
+    if var in df_shortlist.select_dtypes(include=['number']).columns:
+        var_types[var] = 'Hard (Quantitative)'
+    else:
+        var_types[var] = 'Soft (Qualitative)'
+    
+    # Determine proxy status
+    if var in ['PctVacantBoarded', 'PctWOFullPlumb', 'PctUnemployed', 'medIncome']:
+        proxy_status[var] = 'Proxy'
+    else:
+        proxy_status[var] = 'Direct'
+
+# Add to variable mapping
+variable_map['Type'] = variable_map['Variable'].map(var_types).fillna('Unknown')
+variable_map['Measurement'] = variable_map['Variable'].map(proxy_status).fillna('Direct')
+
+# Plot variable types
+plt.figure(figsize=(10, 7))
+type_counts = variable_map[variable_map['Keep?'] == 'Y']['Type'].value_counts()
+ax = sns.barplot(x=type_counts.index, y=type_counts.values, palette='viridis') # Swapped x and y for vertical bars
+plt.title('Distribution of Variable Types (Hard vs. Soft)', fontsize=18, fontweight='bold')
+plt.xlabel('Variable Type')
+plt.ylabel('Number of Variables')
+# Add value labels to bars
+for p in ax.patches:
+    height = p.get_height()
+    ax.text(p.get_x() + p.get_width()/2., height + 0.5,
+            f'{height:.0f}', ha='center', va='bottom')
+plt.tight_layout()
+plt.savefig('images/step2_var_type.png', bbox_inches='tight')
+print("\nVariable type distribution saved to images/step2_var_type.png")
+
+# Plot proxy vs direct measures
+plt.figure(figsize=(10, 7))
+proxy_counts = variable_map[variable_map['Keep?'] == 'Y']['Measurement'].value_counts()
+ax = sns.barplot(x=proxy_counts.index, y=proxy_counts.values, palette='viridis') # Swapped x and y
+plt.title('Distribution of Direct vs. Proxy Measures', fontsize=18, fontweight='bold')
+plt.xlabel('Measurement Type')
+plt.ylabel('Number of Variables')
+# Add value labels to bars
+for p in ax.patches:
+    height = p.get_height()
+    ax.text(p.get_x() + p.get_width()/2., height + 0.5,
+            f'{height:.0f}', ha='center', va='bottom')
+plt.tight_layout()
+plt.savefig('images/step2_measure_type.png', bbox_inches='tight')
+print("\nProxy vs direct measures visualization saved to images/step2_measure_type.png")
+
+# STEP 2.4: Pillar breakdown
+plt.figure(figsize=(14, 10))
+pillar_var_counts = variable_map[variable_map['Keep?'] == 'Y'].groupby('Pillar').size().sort_values(ascending=False)
+ax = sns.barplot(x=pillar_var_counts.index, y=pillar_var_counts.values, palette='crest_r') # Swapped x and y
+plt.title('Number of Variables per Pillar (Post Initial Shortlist)', fontsize=18, fontweight='bold')
+plt.xlabel('Pillar')
+plt.ylabel('Number of Variables')
+plt.xticks(rotation=45, ha='right') # Rotate labels for readability
+# Add value labels to bars
+for p in ax.patches:
+    height = p.get_height()
+    ax.text(p.get_x() + p.get_width()/2., height + 0.5,
+            f'{height:.0f}', ha='center', va='bottom')
+plt.tight_layout()
+plt.savefig('images/step2_vars_by_pillar.png', bbox_inches='tight')
+print("\nVariables by pillar visualization saved to images/step2_vars_by_pillar.png")
+
