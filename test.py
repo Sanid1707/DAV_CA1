@@ -426,3 +426,39 @@ clustergrid.ax_heatmap.tick_params(axis='x', labelsize=8, rotation=90)
 clustergrid.ax_heatmap.tick_params(axis='y', labelsize=8)
 plt.savefig('images/step2_clustered_correlation_after_missing.png', bbox_inches='tight')
 print("\nClustered correlation matrix after missing data pruning saved to images/step2_clustered_correlation_after_missing.png")
+
+#############################################################
+# SECTION 7: CONSTANT/DUPLICATE DETECTION AND REMOVAL
+#############################################################
+
+# STEP 2.8: Check for constant columns and duplicates
+constant_cols = find_constant_columns(df_cleaned)
+print(f"\nConstant columns (to be dropped): {constant_cols}")
+
+duplicate_cols = find_duplicate_columns(df_cleaned)
+print(f"\nDuplicate columns: {duplicate_cols}")
+
+# Create a table of dropped variables due to constants
+constants_df = pd.DataFrame({
+    'Variable': constant_cols,
+    'Reason': ['Zero variance'] * len(constant_cols)
+})
+
+# Add duplicate columns
+dup_info = []
+for col1, col2 in duplicate_cols:
+    dup_info.append({
+        'Variable': col2,
+        'Reason': f'Duplicate of {col1}'
+    })
+if dup_info:
+    constants_df = pd.concat([constants_df, pd.DataFrame(dup_info)], ignore_index=True)
+
+# Save to CSV
+if not constants_df.empty:
+    constants_df.to_csv('step2_dropped_constants.csv', index=False)
+    print("Constants and duplicates saved to step2_dropped_constants.csv")
+
+# Drop constant and duplicate columns
+cols_to_drop = constant_cols + [col2 for col1, col2 in duplicate_cols]
+df_cleaned = df_cleaned.drop(columns=cols_to_drop, errors='ignore')
