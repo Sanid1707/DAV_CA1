@@ -155,3 +155,24 @@ def find_duplicate_columns(df):
                     duplicate_cols.append((cols[i], cols[j]))
     return duplicate_cols
 
+#############################################################
+# SECTION 3: INITIAL DATA PROCESSING
+#############################################################
+
+print("Cleaning and preparing the dataset...")
+# Apply data cleaning steps
+df = fix_column_names(df)
+df = handle_question_marks(df)
+df = convert_to_numeric(df)
+df = handle_implausible_zeros(df)
+
+# Display basic information about the dataset
+print(f"\nDataset shape: {df.shape}")
+print("\nFirst few rows of the dataset:")
+print(df.head())
+
+# Calculate missing percentages
+missing_df = missing_percentage(df)
+print("\nMissing percentage for each variable:")
+print(missing_df)
+
