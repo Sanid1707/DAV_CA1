@@ -462,3 +462,389 @@ if not constants_df.empty:
 # Drop constant and duplicate columns
 cols_to_drop = constant_cols + [col2 for col1, col2 in duplicate_cols]
 df_cleaned = df_cleaned.drop(columns=cols_to_drop, errors='ignore')
+
+#############################################################
+# SECTION 8: OUTLIER ANALYSIS
+#############################################################
+
+# STEP 2.9: Outlier screening
+# Select one key variable from each pillar for box plots
+key_vars = []
+for pillar, data in pillars.items():
+    available = [var for var in data['vars'] if var in df_cleaned.columns]
+    if available:
+        key_vars.append(available[0])
+
+# Create a panel of box plots
+if key_vars:
+    # Determine grid size
+    n_vars = len(key_vars[:9])  # Max 9 plots
+    n_cols = 3
+    n_rows = (n_vars - 1) // n_cols + 1
+    fig, axes = plt.subplots(n_rows, n_cols, figsize=(n_cols*6, n_rows*5))
+    axes = axes.flatten()
+    
+    for i, var in enumerate(key_vars[:9]):
+        if i < len(axes):
+            sns.boxplot(y=df_cleaned[var], ax=axes[i], color=sns.color_palette('viridis')[i % len(sns.color_palette('viridis'))])
+            axes[i].set_title(f'Box Plot of {var}', fontsize=15, fontweight='bold')
+            axes[i].set_ylabel('Value')
+    
+    for j in range(n_vars, len(axes)):
+        axes[j].set_visible(False)
+    
+    plt.suptitle('Outlier Screening: Box Plots for Key Variables per Pillar', fontsize=20, fontweight='bold', y=1.02)
+    plt.tight_layout(rect=[0, 0, 1, 0.98])  # Adjust layout to make space for suptitle
+    plt.savefig('images/step2_boxplot_panel.png', bbox_inches='tight')
+    print("\nBox plot panel saved to images/step2_boxplot_panel.png")
+
+#############################################################
+# SECTION 9: COLLINEARITY ANALYSIS BY PILLAR
+#############################################################
+
+# STEP 2.10: Collinearity analysis WITHIN each pillar
+# Initialize a dict to store vars to drop
+vars_to_drop = set()
+
+# Process each pillar separately
+for pillar, data in pillars.items():
+    pillar_vars = [var for var in data['vars'] if var in df_cleaned.columns]
+    
+    # Get numeric vars for this pillar
+    num_pillar_vars = [var for var in pillar_vars if var in df_cleaned.select_dtypes(include=['number']).columns]
+    
+    if len(num_pillar_vars) < 2:  # Need at least 2 variables for correlation
+        continue
+        
+    # Compute correlation matrix for this pillar
+    pillar_corr = df_cleaned[num_pillar_vars].corr().abs()
+    
+    # Find highly correlated pairs
+    high_corr_pairs = []
+    for i in range(len(pillar_corr.columns)):
+        for j in range(i+1, len(pillar_corr.columns)):
+            if pillar_corr.iloc[i, j] > 0.9:
+                var1 = pillar_corr.columns[i]
+                var2 = pillar_corr.columns[j]
+                corr = pillar_corr.iloc[i, j]
+                high_corr_pairs.append((var1, var2, corr))
+                
+    print(f"\nHighly correlated pairs within {pillar}:")
+    if high_corr_pairs:
+        for var1, var2, corr in high_corr_pairs:
+            print(f"{var1} and {var2}: {corr:.3f}")
+            
+            # IMPORTANT: NEVER drop Crime Indicator variables
+            if pillar == 'Crime Indicators':
+                # Skip this pair, don't drop crime indicators
+                continue
+                
+            # For other pillars, drop the one with more missing values
+            miss1 = missing_df_shortlist.loc[missing_df_shortlist['Variable'] == var1, 'Missing %'].values[0] if var1 in missing_df_shortlist['Variable'].values else 0
+            miss2 = missing_df_shortlist.loc[missing_df_shortlist['Variable'] == var2, 'Missing %'].values[0] if var2 in missing_df_shortlist['Variable'].values else 0
+            
+            if miss1 > miss2:
+                vars_to_drop.add(var1)
+            else:
+                vars_to_drop.add(var2)
+    else:
+        print("No variable pairs with correlation > 0.9")
+
+print(f"\nVariables to drop due to high collinearity ({len(vars_to_drop)}):")
+for var in vars_to_drop:
+    print(f"  - {var}")
+
+# STEP 2.11: Create final dataset after dropping variables
+df_final = df_cleaned.drop(columns=list(vars_to_drop), errors='ignore')
+print(f"\nFinal dataset shape after dropping collinear variables: {df_final.shape}")
+
+# Final correlation heatmap of selected variables
+plt.figure(figsize=(20, 18))  # Adjusted size
+
+# Use a subset of numeric variables if there are too many
+final_numeric_cols = df_final.select_dtypes(include=['number']).columns
+if len(final_numeric_cols) > 50:  # Threshold for too many variables for annotated heatmap
+    # Select representative variables from each pillar
+    subset_vars = []
+    for pillar_name, data in pillars.items():
+        available = [var for var in data['vars'] if var in df_final.columns and var in final_numeric_cols]
+        subset_vars.extend(available[:5])  # Take up to 5 from each pillar
+    subset_vars = list(set(subset_vars))  # Ensure unique vars
+    if len(subset_vars) < 2:  # ensure there are enough for a corr matrix
+        subset_vars = final_numeric_cols[:20]  # fallback to first 20 numeric if subset is too small
+    corr_final = df_final[subset_vars].corr()
+    annotate_heatmap = False  # Turn off annotations if still too many
+else:
+    corr_final = df_final[final_numeric_cols].corr()
+    annotate_heatmap = True
+
+mask = np.triu(np.ones_like(corr_final, dtype=bool))
+cmap_final = sns.diverging_palette(250, 15, s=75, l=40, n=9, center="light", as_cmap=True)  # Consistent cmap
+sns.heatmap(corr_final, mask=mask, cmap=cmap_final, vmax=1, vmin=-1, center=0, 
+            square=True, linewidths=.5, cbar_kws={"shrink": .6, "label": "Pearson Correlation"}, 
+            annot=annotate_heatmap, fmt='.2f', annot_kws={"size": 8})
+plt.title('Correlation Matrix of Final Selected Variables', fontsize=22, fontweight='bold')
+plt.xticks(rotation=45, ha='right', fontsize=10)
+plt.yticks(fontsize=10)
+plt.tight_layout(pad=2.0)
+plt.savefig('images/step2_corr_heatmap.png', bbox_inches='tight')
+print("\nCorrelation heatmap of final variables saved to images/step2_corr_heatmap.png")
+
+# STEP 2.12: Save final shortlist of variables
+df_final.columns.to_series().to_csv('step2_selected_vars.csv', index=False, header=['Variable'])
+print(f"\nFinal selection of {len(df_final.columns)} variables saved to step2_selected_vars.csv")
+
+# Create summary statistics by pillar
+data_characteristics = []
+
+for pillar, data in pillars.items():
+    pillar_vars = [var for var in data['vars'] if var in df_final.columns]
+    if pillar_vars:
+        # Calculate missing percentages for these variables before imputation
+        miss_pcts = []
+        hard_count = 0
+        soft_count = 0
+        proxy_count = 0
+        
+        for var in pillar_vars:
+            if var in missing_df_shortlist['Variable'].values:
+                miss_pct = missing_df_shortlist.loc[missing_df_shortlist['Variable'] == var, 'Missing %'].values[0]
+                miss_pcts.append(miss_pct)
+            else:
+                miss_pcts.append(0)
+            
+            # Count types
+            if var in df_final.select_dtypes(include=['number']).columns:
+                hard_count += 1
+            else:
+                soft_count += 1
+            
+            # Count proxies
+            if var in ['PctVacantBoarded', 'PctWOFullPlumb', 'PctUnemployed', 'medIncome']:
+                proxy_count += 1
+        
+        # Add to summary table
+        data_characteristics.append({
+            'Pillar': pillar,
+            'Variable Count': len(pillar_vars),
+            'Avg Missing %': f"{np.mean(miss_pcts):.1f}%" if miss_pcts else "0.0%",
+            'Hard Variables': hard_count,
+            'Soft Variables': soft_count,
+            'Proxy Variables': proxy_count
+        })
+
+# Convert to DataFrame
+data_char_df = pd.DataFrame(data_characteristics)
+
+#############################################################
+# SECTION 10: SUMMARY VISUALIZATION AND STATISTICS
+#############################################################
+
+# Create a table visualization for the summary statistics
+if not data_char_df.empty:
+    fig, ax = plt.subplots(figsize=(14, len(data_char_df) * 0.6 + 1.5))  # Adjusted size
+    ax.axis('tight')
+    ax.axis('off')
+    ax.set_title('Summary Statistics by Pillar (Final Selected Variables)', fontsize=20, fontweight='bold', pad=20)
+
+    table = ax.table(
+        cellText=data_char_df.values,
+        colLabels=data_char_df.columns,
+        loc='center',
+        cellLoc='center',
+        colWidths=[0.25, 0.12, 0.15, 0.15, 0.15, 0.15]
+    )
+    table.auto_set_font_size(False)
+    table.set_fontsize(11)
+    table.scale(1.2, 1.8)  # Scale table
+
+    # Style table cells - header and data rows
+    for (i, j), cell in table.get_celld().items():
+        if i == 0:  # Header row
+            cell.set_text_props(fontweight='bold', color='white')
+            cell.set_facecolor(sns.color_palette('viridis')[3])  # Darker header
+        else:  # Data rows
+            cell.set_facecolor('whitesmoke' if i % 2 == 0 else 'white')
+        cell.set_edgecolor('grey')
+        cell.set_linewidth(0.5)
+
+    plt.tight_layout()
+    plt.savefig('images/step2_pillar_summary.png', bbox_inches='tight')
+    print("\nSummary statistics by pillar table image saved to images/step2_pillar_summary.png")
+else:
+    print("\nSummary statistics table is empty, not saving image.")
+
+# Also save as CSV
+if not data_char_df.empty:
+    data_char_df.to_csv('step2_pillar_summary.csv', index=False)
+    print("Pillar summary saved to step2_pillar_summary.csv")
+
+# Calculate crime variable presence in final dataset
+crime_indicators = [var for var in pillars['Crime Indicators']['vars'] if var in df_final.columns]
+print(f"\nNumber of Crime Indicators in final dataset: {len(crime_indicators)}")
+if crime_indicators:
+    print("Crime Indicators retained:")
+    for var in crime_indicators:
+        print(f"  - {var}")
+
+# Summary of findings
+print("\n=== SUMMARY OF DATA SELECTION ANALYSIS ===")
+print(f"Total variables after cleaning: {df_final.shape[1]}")
+print(f"Variables dropped due to high missingness: {len(high_missing)}")
+print(f"Variables dropped due to zero variance or duplicates: {len(cols_to_drop)}")
+print(f"Variables dropped due to high collinearity: {len(vars_to_drop)}")
+print(f"Average missing percentage: {missing_df_shortlist['Missing %'].mean():.2f}%")
+print("\nPillar Representation in Final Dataset:")
+for pillar, data in pillars.items():
+    pillar_vars = [var for var in data['vars'] if var in df_final.columns]
+    print(f"  - {pillar}: {len(pillar_vars)} variables")
+
+print("\nRecommendations:")
+print("1. Zeros in crime rate variables are now kept as valid observations")
+print("2. Missingness thresholds are applied differently by pillar (40% for inputs, 60% for Crime Outputs)")
+print("3. Collinearity pruning is now done within each pillar separately, preserving Crime Output variables")
+print("4. All visualizations have been saved to the 'images' folder for reporting purposes")
+print("5. Consider further refinement of crime variables to create a composite Crime-Risk score")
+
+# STEP 2.8: Correlation network visualization
+print("\nGenerating correlation network visualization...")
+# Gather all highly correlated pairs across pillars
+all_high_corr_pairs = []
+for pillar, data in pillars.items():
+    pillar_vars = [var for var in data['vars'] if var in df_cleaned.columns]
+    num_pillar_vars = [var for var in pillar_vars if var in df_cleaned.select_dtypes(include=['number']).columns]
+    
+    if len(num_pillar_vars) < 2:
+        continue
+        
+    pillar_corr = df_cleaned[num_pillar_vars].corr().abs()
+    
+    for i in range(len(pillar_corr.columns)):
+        for j in range(i+1, len(pillar_corr.columns)):
+            if pillar_corr.iloc[i, j] > 0.9:
+                var1 = pillar_corr.columns[i]
+                var2 = pillar_corr.columns[j]
+                corr = pillar_corr.iloc[i, j]
+                all_high_corr_pairs.append((var1, var2, corr, pillar))
+
+# Create network visualization if we have correlated pairs
+if all_high_corr_pairs:
+    plt.figure(figsize=(20, 18))
+    G = nx.Graph()
+    
+    # Collect all variables involved in high correlations
+    all_corr_vars = set()
+    for var1, var2, _, _ in all_high_corr_pairs:
+        all_corr_vars.add(var1)
+        all_corr_vars.add(var2)
+    
+    # Map variables to pillars
+    var_to_pillar = {}
+    for pillar_name, data in pillars.items():
+        for var in data['vars']:
+            if var in all_corr_vars:
+                var_to_pillar[var] = pillar_name
+    
+    # Define distinct colors for different pillars
+    distinct_colors = sns.color_palette("husl", n_colors=len(pillars) + 1)  # +1 for 'Other'
+    pillar_colors_map = {name: distinct_colors[i] for i, name in enumerate(list(pillars.keys()) + ['Other'])}
+    
+    # Add nodes with pillar-based colors
+    node_colors_list = []
+    node_pillar_labels = {}
+    for var in all_corr_vars:
+        pillar_name = var_to_pillar.get(var, 'Other')
+        node_colors_list.append(pillar_colors_map[pillar_name])
+        node_pillar_labels[var] = pillar_name  # Store for legend
+        G.add_node(var, pillar=pillar_name)
+    
+    # Add edges with correlation strength
+    for var1, var2, corr, _ in all_high_corr_pairs:
+        G.add_edge(var1, var2, weight=corr, title=f'{corr:.2f}')
+    
+    # Layout calculation
+    pos = nx.spring_layout(G, k=0.7, iterations=50, seed=42)
+    
+    # Draw nodes with pillar-based colors
+    nx.draw_networkx_nodes(G, pos, node_color=node_colors_list, node_size=1500, alpha=0.85)
+    
+    # Draw edges with varying thickness based on correlation strength
+    edge_weights = [G[u][v]['weight'] * 5 for u, v in G.edges()]
+    nx.draw_networkx_edges(G, pos, width=edge_weights, alpha=0.4, edge_color='grey')
+    
+    # Draw labels
+    nx.draw_networkx_labels(G, pos, font_size=9, font_weight='bold')
+    
+    # Create legend for pillars
+    legend_handles = [plt.Line2D([0], [0], marker='o', color='w', label=pillar_name, 
+                             markersize=10, markerfacecolor=color) 
+                     for pillar_name, color in pillar_colors_map.items() if pillar_name in set(node_pillar_labels.values())]
+    
+    plt.title('Network of Highly Correlated Variables (|r| > 0.9)', fontsize=22, fontweight='bold')
+    plt.legend(handles=legend_handles, title='Variable Pillars', title_fontsize='14', loc='upper right', bbox_to_anchor=(1.15, 1))
+    plt.axis('off')
+    plt.tight_layout()
+    plt.savefig('images/step2_correlation_network.png', bbox_inches='tight')
+    print("Correlation network visualization saved to images/step2_correlation_network.png")
+else:
+    print("Not enough highly correlated pairs to create a correlation network visualization.")
+
+#############################################################
+# SECTION 12: PROXY VALIDATION
+#############################################################
+
+# STEP 2.10: Proxy validation
+print("\nPerforming proxy validation...")
+# For socio-economic variables, use crime indicators as benchmarks
+crime_benchmarks = ['ViolentCrimesPerPop', 'nonViolPerPop', 'murders', 'robberies']
+available_benchmarks = [b for b in crime_benchmarks if b in df_final.columns]
+
+if available_benchmarks:
+    # Select a benchmark (prefer ViolentCrimesPerPop if available)
+    benchmark = 'ViolentCrimesPerPop' if 'ViolentCrimesPerPop' in available_benchmarks else available_benchmarks[0]
+    
+    # Candidate proxy variables from socio-economic disadvantage
+    proxy_candidates = ['PctUnemployed', 'PctPopUnderPov', 'PctLowIncomeUnderPov', 'medIncome', 
+                        'PctKidsBornNevrMarr', 'PctIlleg', 'PctImmigRec5']
+    available_proxies = [p for p in proxy_candidates if p in df_final.columns]
+    
+    if available_proxies and benchmark in df_final.select_dtypes(include=['number']).columns:
+        # Calculate correlations between benchmark and proxy candidates
+        proxy_cors = {}
+        for proxy in available_proxies:
+            if proxy in df_final.select_dtypes(include=['number']).columns:
+                cor = df_final[[proxy, benchmark]].corr().iloc[0, 1]
+                proxy_cors[proxy] = abs(cor)
+        
+        if proxy_cors:
+            plt.figure(figsize=(14, 10))
+            proxy_df = pd.DataFrame({
+                'Proxy Variable': list(proxy_cors.keys()),
+                'Correlation': list(proxy_cors.values())
+            }).sort_values(by='Correlation', ascending=False).head(10)
+            
+            ax = sns.barplot(x='Correlation', y='Proxy Variable', data=proxy_df, palette='mako_r')
+            plt.title(f'Proxy Validation: Correlation with {benchmark}', fontsize=18, fontweight='bold')
+            plt.xlabel('Absolute Correlation Coefficient', fontsize=14)
+            plt.ylabel('Socio-economic Proxy Variables', fontsize=14)
+            
+            # Add value labels
+            for p in ax.patches:
+                width = p.get_width()
+                plt.text(width + 0.01, p.get_y() + p.get_height()/2 + 0.1,
+                        f'{width:.3f}', ha='left', va='center', fontsize=12)
+            
+            plt.xlim(0, 1)  # Correlation is between 0 and 1 (absolute)
+            plt.tight_layout()
+            plt.savefig('images/step2_proxy_cors.png', bbox_inches='tight')
+            print(f"Proxy validation visualization saved to images/step2_proxy_cors.png")
+            
+            # Save to CSV for reference
+            proxy_df.to_csv('step2_proxy_correlations.csv', index=False)
+        else:
+            print("Could not calculate correlations between proxies and benchmark.")
+    else:
+        print("No suitable proxy variables or benchmark variable found for proxy validation.")
+else:
+    print("No crime benchmarks available for proxy validation.")
+
