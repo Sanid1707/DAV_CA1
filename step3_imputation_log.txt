@@ -1,0 +1,10 @@
+Imputed robbbPerPop (0.00% missing) using Multiple imputation (n=5) with KNN, non-negative
+Imputed larcPerPop (0.00% missing) using Multiple imputation (n=5) with KNN, non-negative
+Imputed arsonsPerPop (0.00% missing) using Multiple imputation (n=5) with KNN, non-negative
+Imputed autoTheftPerPop (0.00% missing) using Multiple imputation (n=5) with KNN, non-negative
+Imputed nonViolPerPop (0.00% missing) using Multiple imputation (n=5) with KNN, non-negative
+Imputed burglPerPop (0.00% missing) using Multiple imputation (n=5) with KNN, non-negative
+Imputed murdPerPop (0.00% missing) using Multiple imputation (n=5) with KNN, non-negative
+Imputed assaultPerPop (0.00% missing) using Multiple imputation (n=5) with KNN, non-negative
+Imputed rapesPerPop (0.00% missing) using Multiple imputation (n=5) with KNN, non-negative
+Imputed ViolentCrimesPerPop (0.00% missing) using Multiple imputation (n=5) with KNN, non-negative
