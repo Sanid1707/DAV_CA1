@@ -228,3 +228,52 @@ print(var_categories['Data_Type_Family'].value_counts())
 # Save variable categorization to CSV
 var_categories.to_csv('step3_variable_categories.csv', index=False)
 print("Variable categories saved to 'step3_variable_categories.csv'")
+
+#############################################################
+# SECTION 3: DATA COMPLETENESS ANALYSIS
+# - Check for missing values
+# - Create visualizations of data completeness
+# - Generate variable type distribution visualizations
+#############################################################
+
+print("\n" + "="*80)
+print("SECTION 3: DATA COMPLETENESS ANALYSIS")
+print("="*80)
+
+# Check if there are any missing values
+if missing_with_nulls.empty:
+    print("\nNo missing values found in the dataset. Data is already complete!")
+    
+    # Create directory for step3 images if it doesn't exist
+    os.makedirs('images/step3', exist_ok=True)
+    
+    # DATA COMPLETENESS VISUALIZATIONS
+    print("\nCreating data completeness visualizations...")
+    
+    # Create a visualization to show data completeness
+    plt.figure(figsize=(20, 12))
+    plt.title('Data Completeness Visualization - No Missing Values', fontsize=22, pad=20)
+    ax = sns.heatmap(df.isnull(), cbar=False, cmap='viridis', yticklabels=False)
+    ax.set_xlabel("Variables", fontsize=18, labelpad=15)
+    ax.set_ylabel("Observations", fontsize=18, labelpad=15)
+    plt.tight_layout()
+    plt.savefig('images/step3/01_data_completeness.png', bbox_inches='tight')
+    plt.close()
+    
+    # Create matrix plot showing completeness
+    plt.figure(figsize=(20, 12))
+    msno.matrix(df, fontsize=12, color=(0.4, 0.21, 0.58))
+    plt.title('Data Completeness Matrix - No Missing Values', fontsize=22, pad=20)
+    plt.tight_layout()
+    plt.savefig('images/step3/02_data_completeness_matrix.png', bbox_inches='tight')
+    plt.close()
+    
+    # Add a dendrogram plot to show variable relationships
+    plt.figure(figsize=(20, 12))
+    msno.dendrogram(df, orientation='top', figsize=(20, 12), fontsize=12)
+    plt.title('Dendrogram of Variable Relationships - Complete Data', fontsize=22, pad=20)
+    plt.tight_layout()
+    plt.savefig('images/step3/03_variable_relationships_dendrogram.png', bbox_inches='tight')
+    plt.close()
+    
+    
