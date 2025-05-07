@@ -176,3 +176,78 @@ missing_df = missing_percentage(df)
 print("\nMissing percentage for each variable:")
 print(missing_df)
 
+#############################################################
+# SECTION 4: THEORETICAL FRAMEWORK AND VARIABLE MAPPING
+#############################################################
+
+# STEP 2.0: Theory-based mapping of all variables
+# Define pillars and map variables to them with roles
+pillars = {
+    'Socio-economic Disadvantage': {
+        'vars': ['PctUnemployed', 'PctPopUnderPov', 'PctLowIncomeUnderPov', 'medIncome', 'PctFam2Par',
+                'PctKidsBornNevrMarr', 'PctIlleg', 'PctImmigRec5', 'PctImmigRec8', 'PctImmigRec10',
+                'PctRecentImmig', 'PctRecImmig5', 'PctRecImmig8', 'PctRecImmig10', 'PctNotSpeakEnglWell',
+                'PctLargHouseFam', 'PctLargHouseOccup', 'PersPerFam', 'PersPerOccupHous', 'PersPerRentOccHous'],
+        'role': 'Input'
+    },
+    'Residential Instability': {
+        'vars': ['PctVacantBoarded', 'PctHousNoPhone', 'PctWOFullPlumb', 'OwnOccQrange', 'RentQrange', 
+                'PctHousOccup', 'PctHousOwnerOccup', 'PctVacantHous', 'MedRentpctHousInc', 'MedOwnCostpctInc', 
+                'PctSameHouse85', 'PctSameCounty85', 'PctMovedIn95', 'NumInShelters', 'NumStreet'],
+        'role': 'Input'
+    },
+    'Population & Demographic': {
+        'vars': ['population', 'pctUrban', 'medAge', 'pctWPubAsst', 'pctWSocSec', 'racepctblack', 'racePctWhite', 
+                'racePctAsian', 'racePctHisp', 'pctForeignBorn', 'PctPersDenseHous', 'PctUsePubTrans'],
+        'role': 'Process'
+    },
+    'Crime Indicators': {
+        'vars': ['murders', 'rapes', 'robberies', 'assaults', 'burglaries', 'larcenies', 'autoTheft', 'arsons',
+                'murdPerPop', 'rapesPerPop', 'robbbPerPop', 'assaultPerPop', 'burglPerPop', 'larcPerPop', 
+                'autoTheftPerPop', 'arsonsPerPop', 'ViolentCrimesPerPop', 'nonViolPerPop'],
+        'role': 'Output'
+    }
+}
+
+# Create a variable mapping dataframe
+variable_map = pd.DataFrame({
+    'Variable': df.columns,
+    'Description': [f"Measures {col.lower()} in the community" for col in df.columns],
+    'Keep?': 'N'  # Default is to not keep
+})
+
+# Explicitly mark community name to be kept
+if 'communityname' in variable_map['Variable'].values:
+    community_idx = variable_map.index[variable_map['Variable'] == 'communityname'].tolist()[0]
+    variable_map.loc[community_idx, 'Keep?'] = 'Y'
+    variable_map.loc[community_idx, 'Pillar'] = 'Identifier'
+    variable_map.loc[community_idx, 'Role'] = 'Identifier'
+    print("Community name marked to be kept throughout analysis")
+
+# Assign pillars and roles to variables
+variable_map['Pillar'] = 'Other'
+variable_map['Role'] = 'Other'
+
+# Mark variables to keep based on pillars
+for pillar, data in pillars.items():
+    for var in data['vars']:
+        idx = variable_map.index[variable_map['Variable'] == var].tolist()
+        if idx:
+            variable_map.loc[idx[0], 'Pillar'] = pillar
+            variable_map.loc[idx[0], 'Role'] = data['role']
+            variable_map.loc[idx[0], 'Keep?'] = 'Y'  # Mark to keep
+
+# Save the variable mapping
+variable_map.to_csv('step2_variable_mapping.csv', index=False)
+print("\nVariable mapping created and saved to step2_variable_mapping.csv")
+
+# STEP 2.1: Initial theory-driven shortlist
+# Keep only those with "Keep?=Y"
+shortlisted_vars = variable_map[variable_map['Keep?'] == 'Y']['Variable'].tolist()
+df_shortlist = df[shortlisted_vars]
+
+# Count variables by pillar
+pillar_counts = variable_map[variable_map['Keep?'] == 'Y'].groupby('Pillar').size().reset_index(name='Count')
+pillar_counts.to_csv('step2_shortlist_counts.csv', index=False)
+print(f"\nInitial theory-driven shortlist created with {len(shortlisted_vars)} variables")
+print(pillar_counts)
