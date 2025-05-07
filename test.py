@@ -848,3 +848,254 @@ if available_benchmarks:
 else:
     print("No crime benchmarks available for proxy validation.")
 
+#############################################################
+# SECTION 13: FINAL REPORT GENERATION AND DATASET EXPORT
+#############################################################
+
+# STEP 2.13: Generate Report Narrative
+print("\nGenerating data selection report narrative...")
+
+report_content = f"""# Data Selection Process (Step 2)
+
+## Overview
+This document details the data selection process for the crime risk analysis project, following a theory-driven approach based on social disorganization theory. The process ensured that all crime indicators were preserved while maintaining data quality and addressing redundancy issues.
+
+## Step 2.0: Conceptual Mapping
+Starting with all {df.shape[1]} variables in the dataset, each variable was mapped to one of four theoretical pillars:
+- Socio-economic Disadvantage
+- Residential Instability
+- Population & Demographic factors
+- Crime Indicators (outputs)
+
+Each variable was assigned a role (Input, Process, or Output) based on its theoretical function. This mapping is available in `step2_variable_mapping.csv`.
+
+## Step 2.1: Initial Shortlist
+Based on the theoretical mapping, {len(shortlisted_vars)} variables were shortlisted for further analysis. The distribution across pillars was:
+{pillar_counts.to_string(index=False)}
+
+## Step 2.2: Missing Data Analysis
+Missing data was analyzed for all shortlisted variables. The top 15 variables with missing data are visualized in `step2_missing_top15.png`. Instead of treating zeros as missing in crime variables, the analysis preserved legitimate zero values, which represent valid "no crime" observations.
+
+## Step 2.3: Variable Type Classification
+Variables were classified as either Hard (quantitative) or Soft (qualitative), and as Direct measures or Proxy measures. The distributions are visualized in `step2_var_type.png` and `step2_measure_type.png`.
+
+## Step 2.4: Pillar Distribution
+The distribution of variables across the theoretical pillars is shown in `step2_vars_by_pillar.png`, confirming good representation of all aspects of the theoretical framework.
+
+## Step 2.5: Handling Missing Data
+Different thresholds were applied for different variable types:
+- 40% missing threshold for non-crime variables
+- 60% missing threshold for crime variables
+
+This approach ensured that important crime indicators were not unnecessarily excluded. Variables dropped due to high missingness are listed in `step2_dropped_missing.csv`.
+
+## Step 2.6: Constant and Duplicate Detection
+No constant columns or exact duplicates were found in the dataset. If any had been found, they would have been documented in `step2_dropped_constants.csv`.
+
+## Step 2.7: Outlier Screening
+Outliers were examined for key variables from each pillar, as shown in `step2_boxplot_panel.png`. This helped identify extreme values that might influence subsequent analysis.
+
+## Step 2.8: Correlation Analysis Within Pillars
+Correlation analysis was performed within each pillar separately, rather than across the entire dataset. This approach preserved the theoretical structure while still addressing multicollinearity. The network of highly correlated variables is visualized in `step2_correlation_network.png`.
+
+## Step 2.9: Final Correlation Analysis
+A correlation heatmap of the final selected variables is provided in `step2_corr_heatmap.png`, showing the relationships between variables after all cleaning steps.
+
+## Step 2.10: Proxy Validation
+Proxy variables for socio-economic disadvantage were validated against crime outcome measures. The correlation between proxy variables and the benchmark crime indicator is visualized in `step2_proxy_cors.png`.
+
+## Step 2.11: Final Variable Selection
+The final selection includes {df_final.shape[1]} variables that:
+- Match the theoretical framework
+- Have acceptable levels of missing data
+- Are not constant or duplicate
+- Are not excessively collinear within their pillar
+
+The final variable list is available in `step2_selected_vars.csv`.
+
+## Step 2.12: Summary by Pillar
+The final dataset includes variables from all four theoretical pillars:
+- {len([var for var in pillars['Socio-economic Disadvantage']['vars'] if var in df_final.columns])} Socio-economic Disadvantage variables
+- {len([var for var in pillars['Residential Instability']['vars'] if var in df_final.columns])} Residential Instability variables
+- {len([var for var in pillars['Population & Demographic']['vars'] if var in df_final.columns])} Population & Demographic variables
+- {len([var for var in pillars['Crime Indicators']['vars'] if var in df_final.columns])} Crime Indicators
+
+Detailed statistics by pillar are shown in `step2_pillar_summary.png` and available in `step2_pillar_summary.csv`.
+
+## Next Steps
+With the data now properly selected and cleaned, the next step is to:
+1. Consider creating a composite Crime-Risk score from the crime indicators
+2. Perform feature engineering and transformation as needed
+3. Proceed with exploratory analysis of relationships between input variables and crime outcomes
+"""
+
+# Save the report
+with open('step2_report.md', 'w') as f:
+    f.write(report_content)
+
+print("Data selection report saved to step2_report.md")
+
+# Create a summary of the final selected variables by pillar with descriptions
+print("\nCreating summary of final selected variables by pillar...")
+
+# Create variable descriptions (if not already available)
+var_descriptions = {
+    # Socio-economic Disadvantage
+    'PctUnemployed': 'Percentage of population unemployed',
+    'PctPopUnderPov': 'Percentage of population under poverty level',
+    'PctLowIncomeUnderPov': 'Percentage of low-income population under poverty level',
+    'medIncome': 'Median household income',
+    'PctFam2Par': 'Percentage of families with two parents',
+    'PctKidsBornNevrMarr': 'Percentage of kids born to never married parents',
+    'PctIlleg': 'Percentage of illegitimate children',
+    'PctImmigRec5': 'Percentage of immigrants who immigrated within last 5 years',
+    'PctImmigRec8': 'Percentage of immigrants who immigrated within last 8 years',
+    'PctImmigRec10': 'Percentage of immigrants who immigrated within last 10 years',
+    'PctRecentImmig': 'Percentage of population who are recent immigrants',
+    'PctRecImmig5': 'Percentage of population who immigrated within last 5 years',
+    'PctRecImmig8': 'Percentage of population who immigrated within last 8 years',
+    'PctRecImmig10': 'Percentage of population who immigrated within last 10 years',
+    'PctNotSpeakEnglWell': 'Percentage of population who do not speak English well',
+    'PctLargHouseFam': 'Percentage of large family households',
+    'PctLargHouseOccup': 'Percentage of large occupied households',
+    'PersPerFam': 'Average number of persons per family',
+    'PersPerOccupHous': 'Average number of persons per occupied household',
+    'PersPerRentOccHous': 'Average number of persons per rented occupied household',
+    
+    # Residential Instability
+    'PctVacantBoarded': 'Percentage of vacant housing that is boarded up',
+    'PctHousNoPhone': 'Percentage of households without phone',
+    'PctWOFullPlumb': 'Percentage of housing without full plumbing',
+    'OwnOccQrange': 'Owner occupied housing - interquartile range',
+    'RentQrange': 'Rent - interquartile range',
+    'PctHousOccup': 'Percentage of housing occupied',
+    'PctHousOwnerOccup': 'Percentage of housing owner occupied',
+    'PctVacantHous': 'Percentage of housing vacant',
+    'MedRentpctHousInc': 'Median rent as percentage of household income',
+    'MedOwnCostpctInc': 'Median owner cost as percentage of household income',
+    'PctSameHouse85': 'Percentage of population living in same house since 1985',
+    'PctSameCounty85': 'Percentage of population living in same county since 1985',
+    'PctMovedIn95': 'Percentage of population who moved in 1995',
+    'NumInShelters': 'Number of people in homeless shelters',
+    'NumStreet': 'Number of homeless people on streets',
+    
+    # Population & Demographic
+    'population': 'Total population',
+    'pctUrban': 'Percentage of population that is urban',
+    'medAge': 'Median age',
+    'pctWPubAsst': 'Percentage with public assistance',
+    'pctWSocSec': 'Percentage with social security income',
+    'racepctblack': 'Percentage of population that is African American',
+    'racePctWhite': 'Percentage of population that is Caucasian',
+    'racePctAsian': 'Percentage of population that is Asian',
+    'racePctHisp': 'Percentage of population that is Hispanic',
+    'pctForeignBorn': 'Percentage of population that is foreign born',
+    'PctPersDenseHous': 'Percentage of persons in dense housing',
+    'PctUsePubTrans': 'Percentage of people using public transportation',
+    
+    # Crime Indicators
+    'murders': 'Number of murders',
+    'rapes': 'Number of rapes',
+    'robberies': 'Number of robberies',
+    'assaults': 'Number of assaults',
+    'burglaries': 'Number of burglaries',
+    'larcenies': 'Number of larcenies',
+    'autoTheft': 'Number of auto thefts',
+    'arsons': 'Number of arsons',
+    'murdPerPop': 'Number of murders per population',
+    'rapesPerPop': 'Number of rapes per population',
+    'robbbPerPop': 'Number of robberies per population',
+    'assaultPerPop': 'Number of assaults per population',
+    'burglPerPop': 'Number of burglaries per population',
+    'larcPerPop': 'Number of larcenies per population',
+    'autoTheftPerPop': 'Number of auto thefts per population',
+    'arsonsPerPop': 'Number of arsons per population',
+    'ViolentCrimesPerPop': 'Number of violent crimes per population',
+    'nonViolPerPop': 'Number of non-violent crimes per population',
+    
+    # Identifiers
+    'communityname': 'Name of the community',
+    'state': 'State abbreviation',
+    'countyCode': 'County code',
+    'communityCode': 'Community code'
+}
+
+# Create a default description for any variable not in the dictionary
+for var in df_final.columns:
+    if var not in var_descriptions:
+        var_descriptions[var] = f"Measures {var.lower()} in the community"
+
+# Create a dictionary to hold variables by pillar
+pillar_vars = {}
+for pillar, data in pillars.items():
+    pillar_vars[pillar] = [var for var in data['vars'] if var in df_final.columns]
+
+# Add identifiers as a separate category
+pillar_vars["Identifiers"] = [var for var in df_final.columns if var in ['communityname', 'state', 'countyCode', 'communityCode']]
+
+# Remaining variables that don't fit in any pillar
+all_categorized = []
+for vars_list in pillar_vars.values():
+    all_categorized.extend(vars_list)
+pillar_vars["Other"] = [var for var in df_final.columns if var not in all_categorized]
+
+# Create a dataframe of variables by pillar with descriptions
+pillar_var_desc = []
+for pillar, vars_list in pillar_vars.items():
+    if vars_list:  # Only include pillars with variables
+        for var in vars_list:
+            pillar_var_desc.append({
+                'Pillar': pillar,
+                'Variable': var,
+                'Description': var_descriptions.get(var, f"Measures {var.lower()} in the community")
+            })
+
+pillar_var_df = pd.DataFrame(pillar_var_desc)
+
+# Save to CSV
+pillar_var_df.to_csv('step2_variables_by_pillar.csv', index=False)
+print("Variables by pillar with descriptions saved to step2_variables_by_pillar.csv")
+
+# Also create a markdown table for the report
+md_table = "## Selected Variables by Pillar\n\n"
+for pillar in pillar_vars.keys():
+    vars_in_pillar = [var for var in pillar_var_df['Variable'] if pillar_var_df[pillar_var_df['Variable'] == var]['Pillar'].values[0] == pillar]
+    
+    if vars_in_pillar:
+        md_table += f"\n### {pillar}\n\n"
+        md_table += "| Variable | Description |\n"
+        md_table += "|----------|-------------|\n"
+        
+        for var in vars_in_pillar:
+            desc = pillar_var_df[pillar_var_df['Variable'] == var]['Description'].values[0]
+            md_table += f"| {var} | {desc} |\n"
+
+# Save the markdown table
+with open('step2_variables_by_pillar.md', 'w') as f:
+    f.write(md_table)
+print("Markdown table of variables by pillar saved to step2_variables_by_pillar.md")
+
+
+#############################################################
+# SECTION 14: FINAL DATASET EXPORT
+#############################################################
+
+
+# Ensure community name is included in the final dataset (keep as a backup)
+if 'communityname' not in df_final.columns and 'communityname' in df.columns:
+    # Get community name from original dataset
+    df_final = df_final.copy()
+    df_final['communityname'] = df['communityname']
+    print("Added community name to final dataset")
+elif 'communityname' in df_final.columns:
+    print("Community name already included in final dataset")
+else:
+    print("Warning: Community name column not found in original dataset")
+
+# Save the complete cleaned dataset for further processing
+df_final.to_csv('step2_final_dataset.csv', index=False)
+print("Complete cleaned dataset saved to step2_final_dataset.csv")
+
+#############################################################
+# END OF CRIME DATA ANALYSIS SCRIPT
+#############################################################

@@ -1,0 +1,48 @@
+Pillar,Variable,Description
+Socio-economic Disadvantage,PctUnemployed,Percentage of population unemployed
+Socio-economic Disadvantage,PctPopUnderPov,Percentage of population under poverty level
+Socio-economic Disadvantage,medIncome,Median household income
+Socio-economic Disadvantage,PctFam2Par,Percentage of families with two parents
+Socio-economic Disadvantage,PctImmigRec5,Percentage of immigrants who immigrated within last 5 years
+Socio-economic Disadvantage,PctRecentImmig,Percentage of population who are recent immigrants
+Socio-economic Disadvantage,PctNotSpeakEnglWell,Percentage of population who do not speak English well
+Socio-economic Disadvantage,PctLargHouseFam,Percentage of large family households
+Socio-economic Disadvantage,PersPerFam,Average number of persons per family
+Socio-economic Disadvantage,PersPerRentOccHous,Average number of persons per rented occupied household
+Residential Instability,PctVacantBoarded,Percentage of vacant housing that is boarded up
+Residential Instability,PctHousNoPhone,Percentage of households without phone
+Residential Instability,PctWOFullPlumb,Percentage of housing without full plumbing
+Residential Instability,OwnOccQrange,Owner occupied housing - interquartile range
+Residential Instability,RentQrange,Rent - interquartile range
+Residential Instability,PctHousOccup,Percentage of housing occupied
+Residential Instability,PctSameHouse85,Percentage of population living in same house since 1985
+Residential Instability,NumInShelters,Number of people in homeless shelters
+Population & Demographic,population,Total population
+Population & Demographic,pctUrban,Percentage of population that is urban
+Population & Demographic,pctWPubAsst,Percentage with public assistance
+Population & Demographic,pctWSocSec,Percentage with social security income
+Population & Demographic,racepctblack,Percentage of population that is African American
+Population & Demographic,racePctWhite,Percentage of population that is Caucasian
+Population & Demographic,racePctAsian,Percentage of population that is Asian
+Population & Demographic,racePctHisp,Percentage of population that is Hispanic
+Population & Demographic,PctPersDenseHous,Percentage of persons in dense housing
+Population & Demographic,PctUsePubTrans,Percentage of people using public transportation
+Crime Indicators,murders,Number of murders
+Crime Indicators,rapes,Number of rapes
+Crime Indicators,robberies,Number of robberies
+Crime Indicators,assaults,Number of assaults
+Crime Indicators,burglaries,Number of burglaries
+Crime Indicators,larcenies,Number of larcenies
+Crime Indicators,autoTheft,Number of auto thefts
+Crime Indicators,arsons,Number of arsons
+Crime Indicators,murdPerPop,Number of murders per population
+Crime Indicators,rapesPerPop,Number of rapes per population
+Crime Indicators,robbbPerPop,Number of robberies per population
+Crime Indicators,assaultPerPop,Number of assaults per population
+Crime Indicators,burglPerPop,Number of burglaries per population
+Crime Indicators,larcPerPop,Number of larcenies per population
+Crime Indicators,autoTheftPerPop,Number of auto thefts per population
+Crime Indicators,arsonsPerPop,Number of arsons per population
+Crime Indicators,ViolentCrimesPerPop,Number of violent crimes per population
+Crime Indicators,nonViolPerPop,Number of non-violent crimes per population
+Identifiers,communityname,Name of the community
