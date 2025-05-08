@@ -1,0 +1,38 @@
+Variable,Method,Data_Type_Family
+racepctblack,Clipped at natural bounds (0-100),percentage
+racePctWhite,Clipped at natural bounds (0-100),percentage
+racePctAsian,Clipped at natural bounds (0-100),percentage
+racePctHisp,Clipped at natural bounds (0-100),percentage
+pctUrban,Clipped at natural bounds (0-100),percentage
+pctWSocSec,Clipped at natural bounds (0-100),percentage
+pctWPubAsst,Clipped at natural bounds (0-100),percentage
+PctPopUnderPov,Clipped at natural bounds (0-100),percentage
+PctUnemployed,Clipped at natural bounds (0-100),percentage
+PctFam2Par,Clipped at natural bounds (0-100),percentage
+PctImmigRec5,Clipped at natural bounds (0-100),percentage
+PctRecentImmig,Clipped at natural bounds (0-100),percentage
+PctNotSpeakEnglWell,Clipped at natural bounds (0-100),percentage
+PctLargHouseFam,Clipped at natural bounds (0-100),percentage
+PctPersDenseHous,Clipped at natural bounds (0-100),percentage
+PctHousOccup,Clipped at natural bounds (0-100),percentage
+PctVacantBoarded,Clipped at natural bounds (0-100),percentage
+PctHousNoPhone,Clipped at natural bounds (0-100),percentage
+PctWOFullPlumb,Clipped at natural bounds (0-100),percentage
+PctSameHouse85,Clipped at natural bounds (0-100),percentage
+PctUsePubTrans,Clipped at natural bounds (0-100),percentage
+PersPerFam,Winsorization at 1% and 99% percentiles,ratio
+PersPerRentOccHous,Winsorization at 1% and 99% percentiles,ratio
+murdPerPop,Winsorization at 1% and 99% percentiles,ratio
+rapesPerPop,Winsorization at 1% and 99% percentiles,ratio
+robbbPerPop,Winsorization at 1% and 99% percentiles,ratio
+assaultPerPop,Winsorization at 1% and 99% percentiles,ratio
+burglPerPop,Winsorization at 1% and 99% percentiles,ratio
+larcPerPop,Winsorization at 1% and 99% percentiles,ratio
+autoTheftPerPop,Winsorization at 1% and 99% percentiles,ratio
+arsonsPerPop,Winsorization at 1% and 99% percentiles,ratio
+ViolentCrimesPerPop,Winsorization at 1% and 99% percentiles,ratio
+nonViolPerPop,Winsorization at 1% and 99% percentiles,ratio
+burglaries,Log transformation (log(1+x)),count
+larcenies,Log transformation (log(1+x)),count
+autoTheft,Log transformation (log(1+x)),count
+medIncome,Robust scaling ((x-median)/MAD),monetary
