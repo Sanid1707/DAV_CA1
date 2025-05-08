@@ -1,5 +1,0 @@
-Pillar,Original_Indicators,Trimmed_Indicators,Variance_Explained_PC1,Total_Variance_Explained,Interpretability
-Demographics,9,2,0.5079396116233094,1.0,Improved
-Income,5,2,0.8941756718676216,1.0,Improved
-Housing,14,2,0.6040014820318185,1.0,Improved
-Crime,18,2,0.8859165873231187,1.0,Improved

@@ -1,0 +1,47 @@
+Pillar,Indicator,Importance_Score,Status,Rationale,Weight
+Demographics,population,0.5429386858621662,Drop,"Low communality (0.34), contributes little to principal components.",0.0
+Demographics,racepctblack,0.8280176278715674,Keep,Good communality (0.52) and relatively independent from other indicators. Also identified as theoretically important for our framework.,1.0
+Demographics,racePctWhite,0.5598638394250435,Drop,"Low communality (0.42), contributes little to principal components.",0.0
+Demographics,racePctAsian,0.5281915263423445,Drop,"Low communality (0.27), contributes little to principal components.",0.0
+Demographics,racePctHisp,0.7711884607404749,Keep,"Theoretically important variable for our framework despite low communality (0.23), contributes little to principal components.",1.0
+Demographics,pctUrban,0.829978635628805,Keep,Good communality (0.52) and relatively independent from other indicators. Also identified as theoretically important for our framework.,1.0
+Demographics,PctImmigRec5,0.49425073691435567,Drop,"Low communality (0.10), contributes little to principal components.",0.0
+Demographics,PctRecentImmig,0.5328028704353268,Drop,"Low communality (0.29), contributes little to principal components.",0.0
+Demographics,PctNotSpeakEnglWell,0.7877676167799161,Keep,"Theoretically important variable for our framework despite low communality (0.31), contributes little to principal components.",1.0
+Income,medIncome,0.7704836623508078,Keep,"Theoretically important variable for our framework despite low communality (0.23), contributes little to principal components.",1.0
+Income,pctWSocSec,0.4889956188855862,Drop,"Low communality (0.07), contributes little to principal components.",0.0
+Income,pctWPubAsst,0.7727893582942629,Keep,"Theoretically important variable for our framework despite low communality (0.24), contributes little to principal components.",1.0
+Income,PctPopUnderPov,0.7737471330068908,Keep,"Theoretically important variable for our framework despite low communality (0.24), contributes little to principal components.",1.0
+Income,PctUnemployed,0.7689842274624521,Keep,"Theoretically important variable for our framework despite low communality (0.22), contributes little to principal components.",1.0
+Housing,PersPerFam,0.544156324106978,Drop,"Low communality (0.35), contributes little to principal components.",0.0
+Housing,PctFam2Par,0.7832016747538377,Keep,"Theoretically important variable for our framework despite low communality (0.29), contributes little to principal components.",1.0
+Housing,PctLargHouseFam,0.5282478463068112,Drop,"Low communality (0.27), contributes little to principal components.",0.0
+Housing,PersPerRentOccHous,0.5334514724841934,Drop,"Low communality (0.29), contributes little to principal components.",0.0
+Housing,PctPersDenseHous,0.5263635647403588,Drop,"Low communality (0.26), contributes little to principal components.",0.0
+Housing,PctHousOccup,0.8301999985839628,Keep,Good communality (0.53) and relatively independent from other indicators. Also identified as theoretically important for our framework.,1.0
+Housing,PctVacantBoarded,0.7777250405256653,Keep,"Theoretically important variable for our framework despite low communality (0.26), contributes little to principal components.",1.0
+Housing,PctHousNoPhone,0.7752044050701475,Keep,"Theoretically important variable for our framework despite low communality (0.25), contributes little to principal components.",1.0
+Housing,PctWOFullPlumb,0.5293512531547828,Drop,"Low communality (0.27), contributes little to principal components.",0.0
+Housing,OwnOccQrange,0.5607709862614811,Drop,"Low communality (0.43), contributes little to principal components.",0.0
+Housing,RentQrange,0.5550181368434861,Drop,"Low communality (0.40), contributes little to principal components.",0.0
+Housing,NumInShelters,0.5614949450931428,Drop,"Low communality (0.43), contributes little to principal components.",0.0
+Housing,PctSameHouse85,0.8440877683952774,Keep,Good communality (0.60) and relatively independent from other indicators. Also identified as theoretically important for our framework.,1.0
+Housing,PctUsePubTrans,0.5507265836798736,Drop,"Low communality (0.38), contributes little to principal components.",0.0
+Crime,murders,0.5080024642348517,Drop,"Low communality (0.17), contributes little to principal components.",0.0
+Crime,murdPerPop,0.7475919253697871,Keep,"Theoretically important variable for our framework despite low communality (0.11), contributes little to principal components.",1.0
+Crime,rapes,0.49455155393276656,Drop,"Low communality (0.10), contributes little to principal components.",0.0
+Crime,rapesPerPop,0.50254105160268,Drop,"Low communality (0.14), contributes little to principal components.",0.0
+Crime,robberies,0.49891243644351063,Drop,"Low communality (0.12), contributes little to principal components.",0.0
+Crime,robbbPerPop,0.7483761052136559,Keep,"Theoretically important variable for our framework despite low communality (0.12), contributes little to principal components.",1.0
+Crime,assaults,0.4960477966986309,Drop,"Low communality (0.11), contributes little to principal components.",0.0
+Crime,assaultPerPop,0.5178731415451852,Drop,"Low communality (0.21), contributes little to principal components.",0.0
+Crime,burglaries,0.3449757059550397,Drop,"Low communality (0.10), contributes little to principal components.",0.0
+Crime,burglPerPop,0.5036714377787083,Drop,"Low communality (0.14), contributes little to principal components.",0.0
+Crime,larcenies,0.3491997992596465,Drop,"Low communality (0.12), contributes little to principal components.",0.0
+Crime,larcPerPop,0.3893796652024736,Drop,"Low communality (0.32), contributes little to principal components.",0.0
+Crime,autoTheft,0.503899369974019,Drop,"Low communality (0.14), contributes little to principal components.",0.0
+Crime,autoTheftPerPop,0.7411399068550555,Keep,"Theoretically important variable for our framework despite low communality (0.08), contributes little to principal components.",1.0
+Crime,arsons,0.5352196402654863,Drop,"Low communality (0.30), contributes little to principal components.",0.0
+Crime,arsonsPerPop,0.7856614246380823,Keep,"Theoretically important variable for our framework despite low communality (0.30), contributes little to principal components.",1.0
+Crime,ViolentCrimesPerPop,0.76242443058939,Keep,"Theoretically important variable for our framework despite low communality (0.19), contributes little to principal components.",1.0
+Crime,nonViolPerPop,0.3705321444410304,Drop,"Low communality (0.23), contributes little to principal components.",0.0

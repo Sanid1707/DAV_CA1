@@ -4,48 +4,25 @@
 Step 4: Multivariate Analysis - Section F & G (Collinearity Check & Indicator Selection)
 - Check collinearity between indicators within each pillar
 - Create correlation-based dendrograms
-- Identify highly correlated indicators
-- Create decision grid for keeping/merging/dropping indicators
+- Create initial decision grid for indicator selection
 """
 
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-import os
 from scipy.cluster.hierarchy import dendrogram, linkage
-from scipy.spatial.distance import pdist, squareform
+from scipy.spatial.distance import squareform
+import os
+import glob
 
 # Create directories if they don't exist
 os.makedirs('Step_4/output/figures', exist_ok=True)
+os.makedirs('Step_4/data', exist_ok=True)
 
 print("\n" + "="*80)
 print("SECTION 4-F & 4-G: INDICATOR COLLINEARITY CHECK & SELECTION")
 print("="*80)
-
-# Load data
-try:
-    # Load the original data
-    df = pd.read_csv('step3_final_dataset_for_multivariate.csv')
-    print(f"Loaded original data with {df.shape[0]} communities and {df.shape[1]} variables")
-    
-    # Load PCA loadings if available
-    try:
-        pca_loadings = pd.read_csv('Step_4/data/pca_loadings_summary.csv')
-        print(f"Loaded PCA loadings data")
-        pca_available = True
-    except:
-        print("PCA loadings not found, will calculate communality from scratch")
-        pca_available = False
-        
-except FileNotFoundError:
-    try:
-        # Alternative paths
-        df = pd.read_csv('step3_imputed_dataset.csv')
-        print(f"Loaded data from alternative path")
-    except:
-        print("Error: Could not load required data files")
-        exit(1)
 
 # Define pillars and their indicators
 pillars = {
@@ -70,6 +47,64 @@ pillars = {
     ]
 }
 
+# Utility function to calculate communality
+def calculate_communality(var, pillar, loadings_df, num_components):
+    """Calculate communality for a variable based on PCA loadings."""
+    if pillar not in loadings_df:
+        return 0
+    
+    var_loadings = loadings_df[pillar][loadings_df[pillar]['Variable'] == var]
+    if var_loadings.empty:
+        return 0
+    
+    # Sum squared loadings for the kept components
+    communality = 0
+    for i in range(1, num_components + 1):
+        loading_col = f'PC{i}'
+        if loading_col in var_loadings.columns:
+            communality += var_loadings[loading_col].values[0] ** 2
+    
+    return communality
+
+# Try to load the final dataset from Step 3
+# Look in multiple possible locations
+possible_paths = [
+    '../step3_final_dataset_for_multivariate.csv',
+    '../../step3_final_dataset_for_multivariate.csv',
+    '/Users/sanidhyapandey/DAV_CA1/step3_final_dataset_for_multivariate.csv',
+    '../Step_3/data/step3_imputed_dataset.csv',
+    '../../Step_3/data/step3_imputed_dataset.csv'
+]
+
+# Use glob to find any step3 final dataset file
+glob_patterns = [
+    '../*step3*final*dataset*.csv',
+    '../../*step3*final*dataset*.csv',
+    '../output/data/*step*dataset*.csv',
+    '../Step_3/data/*step3*dataset*.csv'
+]
+
+for pattern in glob_patterns:
+    possible_paths.extend(glob.glob(pattern))
+
+# Try to load from any of the possible paths
+df = None
+for path in possible_paths:
+    try:
+        df = pd.read_csv(path)
+        print(f"Loaded data from {path}")
+        print(f"Dataset contains {df.shape[0]} communities and {df.shape[1]} variables\n")
+        break
+    except:
+        continue
+
+if df is None:
+    print("Error: Could not find the dataset file. Please specify the correct path.")
+    print("Tried the following paths:")
+    for path in possible_paths:
+        print(f"- {path}")
+    exit(1)
+
 # Store collinearity results
 collinearity_results = {}
 indicator_decisions = []
@@ -77,30 +112,27 @@ indicator_decisions = []
 # 4-F: Cluster analysis on indicators (collinearity check)
 print("\n4-F: Performing collinearity check on indicators...")
 
-# Function to calculate communality from PCA loadings
-def calculate_communality(var, pillar, loadings_df, num_components):
-    """Calculate communality of a variable from PCA loadings."""
-    # Filter loadings for this variable and pillar
-    var_loadings = loadings_df[(loadings_df['Variable'] == var) & (loadings_df['Pillar'] == pillar)]
-    
-    # Sum squared loadings across components
-    communality = 0
-    for i in range(1, num_components + 1):
-        component = f'PC{i}'
-        loading_row = var_loadings[var_loadings['Component'] == component]
-        if not loading_row.empty:
-            loading = loading_row['Loading'].values[0]
-            communality += loading ** 2
-    
-    return communality
+# Try to load PCA loadings from previous steps if available
+pca_available = False
+pca_loadings = {}
+try:
+    # Load PCA results
+    for pillar in pillars.keys():
+        try:
+            pca_loadings[pillar] = pd.read_csv(f'Step_4/data/pca_loadings_{pillar}.csv')
+        except:
+            pass
+    pca_available = True
+    print("PCA loadings loaded from previous analysis")
+except:
+    print("Warning: PCA loadings not found, using correlation-based communality estimates")
 
-# Analyze each pillar
+# Analyze each pillar for collinearity
 for pillar, variables in pillars.items():
     print(f"\nAnalyzing collinearity in {pillar} pillar...")
     
-    # Filter valid variables (those that exist in the dataset)
+    # Check if we have enough variables
     valid_vars = [var for var in variables if var in df.columns]
-    
     if len(valid_vars) < 2:
         print(f"  Not enough variables in {pillar} pillar for collinearity analysis. Skipping.")
         continue
@@ -150,11 +182,11 @@ for pillar, variables in pillars.items():
         mask=mask
     )
     
-    # Identify highly correlated pairs (|r| > 0.9)
+    # Identify highly correlated pairs (|r| > 0.95)
     high_corr_pairs = []
     for i in range(len(valid_vars)):
         for j in range(i + 1, len(valid_vars)):
-            if abs(corr_matrix.iloc[i, j]) > 0.9:
+            if abs(corr_matrix.iloc[i, j]) > 0.95:
                 high_corr_pairs.append((
                     valid_vars[i], 
                     valid_vars[j], 
@@ -165,7 +197,7 @@ for pillar, variables in pillars.items():
     if high_corr_pairs:
         plt.figtext(
             0.5, 0.01, 
-            f"Highly correlated pairs (|r| > 0.9): {', '.join([f'{p[0]}-{p[1]} ({p[2]:.2f})' for p in high_corr_pairs])}", 
+            f"Highly correlated pairs (|r| > 0.95): {', '.join([f'{p[0]}-{p[1]} ({p[2]:.2f})' for p in high_corr_pairs])}", 
             ha='center', 
             fontsize=12, 
             bbox=dict(facecolor='yellow', alpha=0.2)
@@ -185,7 +217,7 @@ for pillar, variables in pillars.items():
     }
     
     print(f"  Collinearity analysis for {pillar} completed")
-    print(f"  Found {len(high_corr_pairs)} highly correlated pairs (|r| > 0.9)")
+    print(f"  Found {len(high_corr_pairs)} highly correlated pairs (|r| > 0.95)")
     
     # 4-G: Decision grid for indicators
     print(f"\n4-G: Creating decision grid for {pillar} indicators...")
@@ -193,9 +225,13 @@ for pillar, variables in pillars.items():
     # Determine number of components to keep from PCA
     if pca_available:
         # Get number of components for this pillar
-        eigenvalue_df = pd.read_csv('Step_4/data/pca_eigenvalues_summary.csv')
-        components_to_keep = eigenvalue_df[(eigenvalue_df['Pillar'] == pillar) & 
-                                           (eigenvalue_df['Keep'] == True)].shape[0]
+        try:
+            eigenvalue_df = pd.read_csv('Step_4/data/pca_eigenvalues_summary.csv')
+            components_to_keep = eigenvalue_df[(eigenvalue_df['Pillar'] == pillar) & 
+                                            (eigenvalue_df['Keep'] == True)].shape[0]
+        except:
+            # Default if can't load eigenvalues
+            components_to_keep = 2
     else:
         # Default to 2 components if PCA results not available
         components_to_keep = 2

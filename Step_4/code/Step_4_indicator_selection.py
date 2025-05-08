@@ -31,23 +31,31 @@ print("="*80)
 # Load data
 try:
     # Load the original data
-    df = pd.read_csv('step3_final_dataset_for_multivariate.csv')
+    df = pd.read_csv('../../step3_final_dataset_for_multivariate.csv')
     print(f"Loaded original data with {df.shape[0]} communities and {df.shape[1]} variables")
     
     # Load indicator decision grid
-    indicator_decisions = pd.read_csv('Step_4/output/indicator_decision_grid.csv')
+    indicator_decisions = pd.read_csv('../output/indicator_decision_grid.csv')
     print(f"Loaded indicator decision grid with {indicator_decisions.shape[0]} indicators")
     
 except FileNotFoundError:
     try:
-        # Alternative paths
-        df = pd.read_csv('step3_imputed_dataset.csv')
-        indicator_decisions = pd.read_csv('indicator_decision_grid.csv')
-        print(f"Loaded data from alternative paths")
-    except:
-        print("Error: Could not load required data files")
-        print("Please run Step_4_collinearity.py first to generate the indicator decision grid")
-        exit(1)
+        # Alternative paths - try different relative paths
+        df = pd.read_csv('../step3_final_dataset_for_multivariate.csv')
+        print(f"Loaded data from alternative path 1")
+        indicator_decisions = pd.read_csv('../output/indicator_decision_grid.csv')
+        print(f"Loaded indicator decision grid from alternative path")
+    except FileNotFoundError:
+        try:
+            # Try another alternative path
+            df = pd.read_csv('step3_final_dataset_for_multivariate.csv')
+            print(f"Loaded data from alternative path 2")
+            indicator_decisions = pd.read_csv('Step_4/output/indicator_decision_grid.csv')
+            print(f"Loaded indicator decision grid from alternative path 2")
+        except:
+            print("Error: Could not load required data files")
+            print("Please run Step_4_collinearity.py first to generate the indicator decision grid")
+            exit(1)
 
 # Define pillars and their indicators
 pillars = {
@@ -72,6 +80,37 @@ pillars = {
     ]
 }
 
+# Define theoretically important variables for each pillar based on our theoretical framework
+# These variables will be kept regardless of their statistical properties
+theoretical_importance = {
+    'Demographics': [
+        'racepctblack',      # Important for measuring racial composition related to social disorganization
+        'racePctHisp',       # Important for ethnic heterogeneity assessment
+        'pctUrban',          # Central to Shaw & McKay's work on urbanization and crime
+        'PctNotSpeakEnglWell' # Indicator of social isolation that may reduce collective efficacy
+    ],
+    'Income': [
+        'PctPopUnderPov',    # Fundamental measure of concentrated disadvantage
+        'medIncome',         # Core socioeconomic indicator affecting guardian capability
+        'pctWPubAsst',       # Marker of economic vulnerability and dependency
+        'PctUnemployed'      # Key predictor of motivated offenders in routine activity theory
+    ],
+    'Housing': [
+        'PctHousOccup',      # Indicator of neighborhood stability and vacant property presence
+        'PctSameHouse85',    # Direct measure of residential stability/turnover
+        'PctVacantBoarded',  # Strong indicator of physical disorder
+        'PctHousNoPhone',    # Measure of guardianship capability (ability to call for help)
+        'PctFam2Par'         # Two-parent families as informal social control mechanism
+    ],
+    'Crime': [
+        'ViolentCrimesPerPop', # Comprehensive violent crime measure
+        'murdPerPop',         # Most serious violent crime indicator
+        'robbbPerPop',        # Property crime with violence element
+        'autoTheftPerPop',    # Property crime indicator (vehicle theft)
+        'arsonsPerPop'        # Property destruction indicator
+    ]
+}
+
 # 4-G: Final decision grid for indicators
 print("\n4-G: Creating final decision grid for indicators...")
 
@@ -79,18 +118,21 @@ print("\n4-G: Creating final decision grid for indicators...")
 final_indicators = []
 
 # Define minimum number of indicators to keep per pillar
-MIN_INDICATORS_PER_PILLAR = 2
+# Increased from 2 to 4 to accommodate more theoretical variables
+MIN_INDICATORS_PER_PILLAR = 4
 
-# Function to calculate indicator importance score
-def calculate_importance_score(row, pillar_decisions):
+# Function to calculate indicator importance score with increased emphasis on theoretical importance
+def calculate_importance_score(row, pillar_decisions, pillar, indicator):
     """
     Calculate a balanced importance score based on multiple criteria
     Returns a score between 0 and 1, where higher is more important
+    Now with increased weight for theoretical importance
     """
     # Statistical quality (communality)
     communality = row['Communality'] if 'Communality' in row else 0.5
     
     # Uniqueness (inverse of being in high correlation group)
+    # Note: we're now using a correlation threshold of 0.95 instead of 0.9
     uniqueness = 0.0 if row['In_High_Correlation_Group'] else 1.0
     
     # PC Representation - check if it's the top loading on any PC
@@ -103,15 +145,15 @@ def calculate_importance_score(row, pillar_decisions):
     
     pc_representation = 1.0 if is_top_loading else 0.5
     
-    # Conceptual importance (default high for now - can be refined)
-    conceptual_importance = 0.8
+    # Conceptual importance (now checking against our theoretical framework)
+    theoretical_value = 1.0 if indicator in theoretical_importance.get(pillar, []) else 0.5
     
-    # Calculate weighted score
+    # Calculate weighted score with increased weight on theoretical importance
     score = (
-        0.3 * communality +         # Statistical quality
-        0.2 * uniqueness +          # Uniqueness of information
-        0.2 * pc_representation +   # Representation of principal components
-        0.3 * conceptual_importance # Conceptual importance
+        0.20 * communality +         # Statistical quality
+        0.15 * uniqueness +          # Uniqueness of information
+        0.15 * pc_representation +   # Representation of principal components
+        0.50 * theoretical_value     # Conceptual importance (increased weight)
     )
     
     return score
@@ -144,7 +186,7 @@ for pillar, variables in pillars.items():
     importance_scores = {}
     for _, row in pillar_decisions.iterrows():
         indicator = row['Indicator']
-        importance_scores[indicator] = calculate_importance_score(row, pillar_decisions)
+        importance_scores[indicator] = calculate_importance_score(row, pillar_decisions, pillar, indicator)
         
         if row['Decision'].startswith('Keep'):
             keep_indicators.append(indicator)
@@ -160,13 +202,18 @@ for pillar, variables in pillars.items():
         reverse=True  # Higher scores first
     )
     
-    # Ensure minimum representation from each pillar
+    # First, automatically include all theoretically important variables
     final_keep_indicators = []
+    for indicator in theoretical_importance.get(pillar, []):
+        if indicator in variables and indicator in importance_scores:
+            final_keep_indicators.append(indicator)
     
-    # First, include all definite keeps
-    final_keep_indicators.extend(keep_indicators)
+    # Add indicators previously marked as "keep" if not already included
+    for indicator in keep_indicators:
+        if indicator not in final_keep_indicators:
+            final_keep_indicators.append(indicator)
     
-    # If we don't have enough, add from consider_indicators by importance score
+    # If we still don't have enough, add from consider_indicators by importance score
     if len(final_keep_indicators) < MIN_INDICATORS_PER_PILLAR:
         sorted_consider = sorted(
             [(ind, importance_scores[ind]) for ind in consider_indicators],
@@ -194,30 +241,11 @@ for pillar, variables in pillars.items():
                 if len(final_keep_indicators) >= MIN_INDICATORS_PER_PILLAR:
                     break
     
-    # For Crime and Income pillars, ensure PC1 is well-represented 
-    # by keeping at least one high-loading indicator from PC1
-    if pillar in ['Crime', 'Income']:
-        has_pc1_representation = False
-        for ind in final_keep_indicators:
-            row = pillar_decisions[pillar_decisions['Indicator'] == ind]
-            if not row.empty and ('PC1' in row['Rationale'].values[0] or 'principal component' in row['Rationale'].values[0].lower()):
-                has_pc1_representation = True
-                break
-        
-        if not has_pc1_representation:
-            # Find an indicator that loads highly on PC1
-            for ind, score in sorted_indicators:
-                row = pillar_decisions[pillar_decisions['Indicator'] == ind]
-                if not row.empty and ('PC1' in row['Rationale'].values[0] or 'principal component' in row['Rationale'].values[0].lower()):
-                    if ind not in final_keep_indicators:
-                        final_keep_indicators.append(ind)
-                        break
-    
     # Count final decisions
     keep_count = len(final_keep_indicators)
     drop_count = len([ind for ind in variables if ind in importance_scores and ind not in final_keep_indicators])
     
-    print(f"  Balanced selection: Keep {keep_count}, Drop {drop_count}")
+    print(f"  Relaxed theoretical selection: Keep {keep_count}, Drop {drop_count}")
     print(f"  Indicators to keep: {', '.join(final_keep_indicators)}")
     
     # Add final decisions to the indicator list
@@ -231,8 +259,14 @@ for pillar, variables in pillars.items():
             status = 'Keep'
             weight = 1.0
             
-            # If it was originally marked for dropping, add explanation
-            if decision.startswith('Drop'):
+            # Add explanation based on the reason for keeping
+            if indicator in theoretical_importance.get(pillar, []):
+                if decision.startswith('Drop'):
+                    rationale = "Theoretically important variable for our framework despite " + rationale.lower()
+                else:
+                    rationale += ' Also identified as theoretically important for our framework.'
+            # If it was originally marked for dropping but we're keeping it
+            elif decision.startswith('Drop'):
                 rationale += ' Kept to ensure minimum pillar representation and balanced selection.'
             elif 'merging' in decision:
                 rationale += ' Kept based on balanced scoring across statistical and conceptual criteria.'
@@ -248,300 +282,237 @@ for pillar, variables in pillars.items():
         final_indicators.append({
             'Pillar': pillar,
             'Indicator': indicator,
-            'Importance_Score': importance_scores.get(indicator, 0.0),
+            'Importance_Score': importance_scores[indicator],
             'Status': status,
             'Rationale': rationale,
             'Weight': weight
         })
 
-# Create final indicators dataframe
+# Save final indicators to CSV
 final_indicators_df = pd.DataFrame(final_indicators)
 final_indicators_df.to_csv('Step_4/output/final_indicators.csv', index=False)
-print(f"\nFinal indicators saved to 'Step_4/output/final_indicators.csv'")
+print(f"Saved final indicators to Step_4/output/final_indicators.csv")
 
-# Create a pivoted view for easy reference
-pivot_df = pd.pivot_table(
-    final_indicators_df,
-    index=['Pillar', 'Indicator'],
-    values=['Status', 'Weight', 'Importance_Score'],
-    aggfunc='first'
-).reset_index()
+# Count how many indicators we're keeping per pillar
+keep_counts = final_indicators_df[final_indicators_df['Status'] == 'Keep'].groupby('Pillar').size()
+print("\nFinal indicator counts per pillar:")
+for pillar, count in keep_counts.items():
+    print(f"  {pillar}: {count}")
 
-pivot_df.to_csv('Step_4/output/final_indicators_pivot.csv', index=False)
-print(f"Pivoted view saved to 'Step_4/output/final_indicators_pivot.csv'")
-
-# Create final indicators summary
-summary_stats = final_indicators_df.groupby(['Pillar', 'Status']).size().unstack(fill_value=0)
-summary_stats['Total'] = summary_stats.sum(axis=1)
-summary_stats.to_csv('Step_4/output/final_indicators_summary.csv')
-print(f"Summary statistics saved to 'Step_4/output/final_indicators_summary.csv'")
-
-# Print summary
-print("\nFinal indicator selection summary:")
-print(summary_stats)
-
-# 4-H: Re-run PCA on trimmed indicator set
-print("\n4-H: Re-running PCA on trimmed indicator set...")
-
-# Function to standardize data
-def standardize_data(df, variables):
-    """Standardize variables in the dataframe"""
-    result = df.copy()
-    for var in variables:
-        if var in df.columns:
-            mean = df[var].mean()
-            std = df[var].std()
-            if std > 0:
-                result[var] = (df[var] - mean) / std
-    return result
-
-# Identify indicators to keep for each pillar
-kept_indicators = {}
+# Get all indicators we're keeping
+kept_indicators = final_indicators_df[final_indicators_df['Status'] == 'Keep']['Indicator'].tolist()
+print(f"\nTotal indicators kept: {len(kept_indicators)}")
+print("Kept indicators:")
 for pillar in pillars.keys():
-    pillar_indicators = final_indicators_df[
-        (final_indicators_df['Pillar'] == pillar) & 
-        (final_indicators_df['Status'].str.contains('Keep'))
-    ]['Indicator'].tolist()
-    
-    if len(pillar_indicators) < 2:
-        print(f"  Warning: Fewer than 2 indicators selected for {pillar}. PCA requires at least 2 variables.")
-        # Keep all if too few selected
-        pillar_indicators = [var for var in pillars[pillar] if var in df.columns]
-        print(f"  Using all {len(pillar_indicators)} available indicators for {pillar}")
-    
-    kept_indicators[pillar] = pillar_indicators
+    pillar_indicators = final_indicators_df[(final_indicators_df['Pillar'] == pillar) & (final_indicators_df['Status'] == 'Keep')]['Indicator'].tolist()
+    if pillar_indicators:
+        print(f"  {pillar}: {', '.join(pillar_indicators)}")
 
-# Perform PCA on the trimmed indicator set
-pca_results_trimmed = {}
+# 4-H to 4-I: Re-running PCA on trimmed dataset and documenting results
 
-for pillar, variables in kept_indicators.items():
-    print(f"\nRe-running PCA for {pillar} pillar with {len(variables)} indicators...")
+# Helper functions 
+def standardize_data(df, variables):
+    """Standardize data for PCA."""
+    X = df[variables].copy()
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X)
+    return pd.DataFrame(X_scaled, columns=variables, index=df.index)
+
+def run_pca(df, variables, n_components=None):
+    """Run PCA on the given variables."""
+    X = standardize_data(df, variables)
+    pca = PCA(n_components=n_components)
+    principal_components = pca.fit_transform(X)
     
-    if len(variables) < 2:
-        print(f"  Skipping PCA for {pillar} - insufficient variables")
+    # Create dataframe with principal components
+    component_names = [f"PC{i+1}" for i in range(pca.n_components_)]
+    pc_df = pd.DataFrame(data=principal_components, columns=component_names, index=df.index)
+    
+    # Add the original community name if available
+    if 'communityname' in df.columns:
+        pc_df['communityname'] = df['communityname']
+    
+    return pc_df, pca
+
+def create_explained_variance_plot(pca, title=""):
+    """Create scree plot for explained variance."""
+    plt.figure(figsize=(10, 6))
+    
+    # Individual explained variance
+    plt.bar(
+        range(1, len(pca.explained_variance_ratio_) + 1),
+        pca.explained_variance_ratio_,
+        alpha=0.7,
+        label='Individual explained variance'
+    )
+    
+    # Cumulative explained variance
+    plt.step(
+        range(1, len(pca.explained_variance_ratio_) + 1),
+        np.cumsum(pca.explained_variance_ratio_),
+        where='mid',
+        label='Cumulative explained variance',
+        color='red'
+    )
+    
+    plt.axhline(y=0.7, color='k', linestyle='--', alpha=0.3, label='70% explained variance')
+    plt.xlabel('Principal Component')
+    plt.ylabel('Explained Variance Ratio')
+    plt.title(f'Scree Plot - {title}')
+    plt.xticks(range(1, len(pca.explained_variance_ratio_) + 1))
+    plt.ylim(0, 1.05)
+    plt.gca().yaxis.set_major_formatter(mtick.PercentFormatter(1.0))
+    plt.grid(True, alpha=0.3)
+    plt.legend(loc='best')
+    plt.tight_layout()
+    return plt
+
+print("\n4-H,I: Re-running PCA on trimmed indicator set and documenting results...")
+
+# Create trimmed dataset with only the kept indicators
+kept_vars = ['communityname'] + kept_indicators
+trimmed_df = df[kept_vars].copy()
+
+# Save the trimmed dataset
+trimmed_df.to_csv('Step_4/output/step4_trimmed_dataset.csv', index=False)
+print(f"Saved trimmed dataset with {trimmed_df.shape[1]-1} indicators to Step_4/output/step4_trimmed_dataset.csv")
+
+# Re-run PCA on each pillar with the trimmed indicators
+pillar_pca_results = {}
+pillar_vars = {}
+
+for pillar in pillars.keys():
+    pillar_indicators = final_indicators_df[(final_indicators_df['Pillar'] == pillar) & (final_indicators_df['Status'] == 'Keep')]['Indicator'].tolist()
+    if not pillar_indicators:
         continue
     
-    # Standardize data
-    X = standardize_data(df, variables)[variables].values
+    pillar_vars[pillar] = pillar_indicators
     
-    # Run PCA
-    pca = PCA()
-    pca.fit(X)
-    
-    # Extract key results
-    explained_variance = pca.explained_variance_ratio_
-    cumulative_variance = np.cumsum(explained_variance)
-    
-    # Store results
-    pca_results_trimmed[pillar] = {
-        'components': pca.components_,
-        'explained_variance': explained_variance,
-        'cumulative_variance': cumulative_variance,
-        'variables': variables
+    # Run PCA on this pillar
+    pc_df, pca = run_pca(df, pillar_indicators)
+    pillar_pca_results[pillar] = {
+        'pc_df': pc_df,
+        'pca': pca,
+        'n_components': len(pillar_indicators),
+        'explained_variance': pca.explained_variance_ratio_,
+        'cumulative_variance': np.cumsum(pca.explained_variance_ratio_),
+        'loadings': pca.components_
     }
     
-    # Summary statistics
-    total_variance = sum(explained_variance)
-    n_components_60pct = sum(cumulative_variance < 0.6) + 1
-    
-    print(f"  Total variance explained: {total_variance:.4f}")
-    print(f"  Components needed for 60% variance: {n_components_60pct}")
-    
-    # Create scree plot for trimmed indicators
-    plt.figure(figsize=(12, 8))
-    
-    plt.subplot(1, 2, 1)
-    plt.bar(range(1, len(explained_variance) + 1), pca.explained_variance_, alpha=0.6)
-    plt.axhline(y=1, color='r', linestyle='--')
-    plt.title(f'Scree Plot - {pillar} (Trimmed)')
-    plt.xlabel('Principal Component')
-    plt.ylabel('Eigenvalue')
-    plt.xticks(range(1, len(explained_variance) + 1))
-    
-    plt.subplot(1, 2, 2)
-    plt.plot(range(1, len(explained_variance) + 1), cumulative_variance, 'o-')
-    plt.axhline(y=0.6, color='r', linestyle='--')
-    plt.title(f'Cumulative Variance - {pillar} (Trimmed)')
-    plt.xlabel('Number of Components')
-    plt.ylabel('Cumulative Explained Variance')
-    plt.xticks(range(1, len(explained_variance) + 1))
-    
-    plt.tight_layout()
-    plt.savefig(f'Step_4/output/figures/pca_trimmed_{pillar}.png', dpi=300, bbox_inches='tight')
+    # Create scree plot for this pillar
+    plt = create_explained_variance_plot(pca, title=f"{pillar} Pillar - {len(pillar_indicators)} indicators")
+    plt.savefig(f"Step_4/output/figures/scree_plot_{pillar}_trimmed.png", dpi=300, bbox_inches='tight')
     plt.close()
-    
-    # Create component loadings visualization
-    if len(variables) > 1:
-        plt.figure(figsize=(12, 8))
-        loadings = pd.DataFrame(
-            pca.components_.T,
-            index=variables,
-            columns=[f'PC{i+1}' for i in range(len(variables))]
-        )
-        
-        # Plot loadings for first 2 components
-        components_to_plot = min(2, len(variables))
-        sns.heatmap(
-            loadings.iloc[:, :components_to_plot], 
-            cmap='coolwarm', 
-            center=0, 
-            annot=True, 
-            fmt='.2f'
-        )
-        plt.title(f'Component Loadings - {pillar} (Trimmed)')
-        plt.tight_layout()
-        plt.savefig(f'Step_4/output/figures/pca_loadings_trimmed_{pillar}.png', dpi=300, bbox_inches='tight')
-        plt.close()
 
-# Compare results before and after trimming
-pca_comparison = []
-
-for pillar, results in pca_results_trimmed.items():
-    # Calculate metrics
-    variance_explained_pc1 = results['explained_variance'][0] if len(results['explained_variance']) > 0 else 0
-    variance_explained_total = np.sum(results['explained_variance'])
-    n_indicators = len(results['variables'])
-    
-    # Add to comparison
-    pca_comparison.append({
-        'Pillar': pillar,
-        'Original_Indicators': len(pillars[pillar]),
-        'Trimmed_Indicators': n_indicators,
-        'Variance_Explained_PC1': variance_explained_pc1,
-        'Total_Variance_Explained': variance_explained_total,
-        'Interpretability': 'Improved' if variance_explained_pc1 > 0.4 else 'Similar'
-    })
-
-# Create comparison dataframe
-pca_comparison_df = pd.DataFrame(pca_comparison)
-pca_comparison_df.to_csv('Step_4/output/pca_comparison.csv', index=False)
-print(f"\nPCA comparison saved to 'Step_4/output/pca_comparison.csv'")
-
-# 4-I: Document and version-control
-print("\n4-I: Documenting analysis and creating final dataset...")
-
-# Create a markdown summary of the entire analysis
-analysis_summary = """
-# Step 4: Multivariate Analysis Summary
-
-## Overview
-
-This document summarizes the multivariate analysis conducted in Step 4, including:
-- Principal Component Analysis (PCA) of indicators within each pillar
-- Cluster analysis of communities
-- Indicator collinearity assessment
-- Final indicator selection
-
-## Key Findings
-
-### Principal Component Analysis
-
-"""
-
-# Add PCA findings for each pillar
-for pillar, results in pca_results_trimmed.items():
-    analysis_summary += f"#### {pillar} Pillar\n\n"
-    analysis_summary += f"- Original indicators: {len(pillars[pillar])}\n"
-    analysis_summary += f"- Final indicators: {len(results['variables'])}\n"
-    
-    if len(results['explained_variance']) > 0:
-        variance_pc1 = results['explained_variance'][0]
-        variance_total = np.sum(results['explained_variance'])
-        analysis_summary += f"- Variance explained by PC1: {variance_pc1:.2f} ({variance_pc1*100:.1f}%)\n"
-        analysis_summary += f"- Total variance explained: {variance_total:.2f} ({variance_total*100:.1f}%)\n"
-    
-    analysis_summary += f"- Final indicators: {', '.join(results['variables'])}\n\n"
-
-analysis_summary += """
-### Cluster Analysis
-
-Cluster analysis was performed using both hierarchical and k-means clustering methods on the principal component scores. The optimal number of clusters was determined using silhouette scores.
-
-"""
-
-# Add cluster analysis findings
-try:
-    cluster_summary = pd.read_csv('Step_4/output/clustering_summary.csv')
-    for _, row in cluster_summary.iterrows():
-        pillar = row['Pillar']
-        n_clusters = row['Optimal_Clusters']
-        silhouette = row['Best_Silhouette_Score']
-        rand_index = row['Rand_Index']
-        
-        analysis_summary += f"#### {pillar} Pillar\n\n"
-        analysis_summary += f"- Optimal number of clusters: {n_clusters}\n"
-        analysis_summary += f"- Silhouette score: {silhouette:.3f}\n"
-        analysis_summary += f"- Agreement between methods (Rand Index): {rand_index:.3f}\n"
-        analysis_summary += f"- See cluster profiles in '{pillar}_cluster_profiles.csv'\n\n"
-except:
-    analysis_summary += "Detailed cluster analysis information not available.\n\n"
-
-analysis_summary += """
-### Indicator Selection
-
-The following summarizes the final indicator selection based on multivariate analysis:
-
-"""
-
-# Add indicator selection summary
-for pillar, indicators in kept_indicators.items():
-    analysis_summary += f"#### {pillar} Pillar\n\n"
-    analysis_summary += f"- Selected indicators: {len(indicators)}\n"
-    analysis_summary += f"- Indicators: {', '.join(indicators)}\n"
-    
-    # Add notes on dropped indicators
-    dropped = [var for var in pillars[pillar] if var in df.columns and var not in indicators]
-    if dropped:
-        analysis_summary += f"- Dropped indicators: {', '.join(dropped)}\n"
-    
-    analysis_summary += "\n"
-
-analysis_summary += """
-### Implications for Next Steps
-
-The final set of indicators identified through multivariate analysis will be:
-1. Re-normalized in Step 5
-2. Weighted and aggregated in Step 6
-
-This ensures that the composite indicators will be built on statistically sound foundations with:
-- Reduced redundancy between indicators
-- Balanced representation across conceptual dimensions
-- Enhanced interpretability of results
-"""
-
-# Save analysis summary
+# Generate final analysis summary document
 with open('Step_4/output/step4_analysis_summary.md', 'w') as f:
-    f.write(analysis_summary)
+    f.write("\n# Step 4: Multivariate Analysis Summary\n\n")
+    
+    f.write("## Overview\n\n")
+    f.write("This document summarizes the multivariate analysis conducted in Step 4, including:\n")
+    f.write("- Principal Component Analysis (PCA) of indicators within each pillar\n")
+    f.write("- Cluster analysis of communities\n")
+    f.write("- Indicator collinearity assessment\n")
+    f.write("- Final indicator selection\n\n")
+    
+    f.write("## Key Findings\n\n")
+    
+    f.write("### Principal Component Analysis\n\n")
+    
+    for pillar, results in pillar_pca_results.items():
+        f.write(f"#### {pillar} Pillar\n\n")
+        original_count = len(pillars[pillar])
+        final_count = len(pillar_vars[pillar])
+        
+        f.write(f"- Original indicators: {original_count}\n")
+        f.write(f"- Final indicators: {final_count}\n")
+        
+        if results['explained_variance'].size > 0:
+            var_pc1 = results['explained_variance'][0]
+            var_total = np.sum(results['explained_variance'])
+            f.write(f"- Variance explained by PC1: {var_pc1:.2f} ({var_pc1*100:.1f}%)\n")
+            f.write(f"- Total variance explained: {var_total:.2f} ({var_total*100:.1f}%)\n")
+        
+        f.write(f"- Final indicators: {', '.join(pillar_vars[pillar])}\n\n")
+    
+    f.write("\n### Cluster Analysis\n\n")
+    f.write("Cluster analysis was performed using both hierarchical and k-means clustering methods on the principal component scores. The optimal number of clusters was determined using silhouette scores.\n\n")
+    f.write("Detailed cluster analysis information not available.\n\n")
+    
+    f.write("\n### Indicator Selection\n\n")
+    f.write("The following summarizes the final indicator selection based on multivariate analysis:\n\n")
+    
+    for pillar in pillars.keys():
+        f.write(f"#### {pillar} Pillar\n\n")
+        
+        kept = final_indicators_df[(final_indicators_df['Pillar'] == pillar) & (final_indicators_df['Status'] == 'Keep')]['Indicator'].tolist()
+        dropped = final_indicators_df[(final_indicators_df['Pillar'] == pillar) & (final_indicators_df['Status'] == 'Drop')]['Indicator'].tolist()
+        
+        f.write(f"- Selected indicators: {len(kept)}\n")
+        f.write(f"- Indicators: {', '.join(kept)}\n")
+        f.write(f"- Dropped indicators: {', '.join(dropped)}\n\n")
+    
+    f.write("\n### Theoretical Framework Considerations\n\n")
+    f.write("This analysis has been specifically adjusted to prioritize variables that are theoretically important for our Community Crime-Risk Index (CCRI) framework. We have:\n\n")
+    f.write("1. Prioritized variables central to Social Disorganization Theory (Shaw & McKay) and Routine Activity Theory\n")
+    f.write("2. Relaxed the statistical criteria (such as communality thresholds) for theoretically important variables\n")
+    f.write("3. Retained more variables per pillar to ensure comprehensive coverage of our theoretical constructs\n")
+    f.write("4. Balanced statistical qualities with theoretical importance using a weighted scoring approach\n\n")
+    
+    f.write("This modified approach ensures that our final indicator set captures the multidimensional nature of community crime risk as conceptualized in our theoretical framework, while still maintaining statistical validity.\n\n")
+    
+    f.write("\n### Implications for Next Steps\n\n")
+    f.write("The final set of indicators identified through multivariate analysis will be:\n")
+    f.write("1. Re-normalized in Step 5\n")
+    f.write("2. Weighted and aggregated in Step 6\n\n")
+    
+    f.write("This ensures that the composite indicators will be built on statistically sound foundations with:\n")
+    f.write("- Reduced redundancy between indicators\n")
+    f.write("- Balanced representation across conceptual dimensions\n")
+    f.write("- Enhanced interpretability of results\n")
+    f.write("- Strong theoretical grounding in criminological theory\n")
 
-print(f"Analysis summary saved to 'Step_4/output/step4_analysis_summary.md'")
+print("\nStep 4 indicator selection and documentation complete.\nUpdated final indicators are ready for Step 5 normalization.")
 
-# Create final dataset for next step
-final_df = df.copy()
+# Document the Approach to Indicator Selection
+with open('Step_4/output/theoretical_selection_approach.md', 'w') as f:
+    f.write("# Theoretical Approach to Variable Selection in Step 4\n\n")
+    
+    f.write("## Introduction\n\n")
+    f.write("This document explains our modified approach to variable selection in Step 4, which prioritizes theoretical relevance while still considering statistical properties.\n\n")
+    
+    f.write("## Rationale for the Modified Approach\n\n")
+    f.write("While traditional multivariate analysis often relies heavily on statistical criteria like communality and collinearity to select variables, we have modified our approach for the following reasons:\n\n")
+    
+    f.write("1. **Theoretical Framework Fidelity**: Our Community Crime-Risk Index (CCRI) is grounded in established criminological theories, particularly Social Disorganization Theory (Shaw & McKay) and Routine Activity Theory. Statistical criteria alone may eliminate variables that are conceptually central to these theories.\n\n")
+    
+    f.write("2. **Balanced Representation**: We need adequate representation from all four pillars (Demographics, Income, Housing, Crime) to create a theoretically sound composite index.\n\n")
+    
+    f.write("3. **Future Normalization and Weighting**: For Step 5 (normalization) and Step 6 (weighting), we need a more comprehensive set of variables to ensure our index captures the multidimensional nature of community crime risk.\n\n")
+    
+    f.write("4. **Avoiding Oversimplification**: Reducing our dataset too aggressively based solely on statistical criteria risks oversimplifying the complex phenomenon we're studying.\n\n")
+    
+    f.write("## Methodology Changes\n\n")
+    f.write("We've implemented the following changes to our variable selection process:\n\n")
+    
+    f.write("1. **Increased Minimum Variables Per Pillar**: We've increased the minimum number of indicators per pillar from 2 to 4.\n\n")
+    
+    f.write("2. **Identification of Theoretically Important Variables**: We've explicitly identified variables that are theoretically important for each pillar, based on our research framework.\n\n")
+    
+    f.write("3. **Modified Importance Score Calculation**: We've adjusted our importance scoring algorithm to give greater weight (50%) to theoretical importance, while still considering statistical properties like communality (20%), uniqueness (15%), and PC representation (15%).\n\n")
+    
+    f.write("4. **Retention of Correlated Variables**: We've relaxed our stance on multicollinearity, allowing the retention of theoretically important variables even when they are highly correlated with others.\n\n")
+    
+    f.write("## Implications for the Analysis\n\n")
+    f.write("This approach results in retaining more variables than a purely statistical selection would recommend. However, it ensures that our composite index:\n\n")
+    
+    f.write("1. Maintains strong theoretical validity\n")
+    f.write("2. Captures all key dimensions of our research framework\n")
+    f.write("3. Provides sufficient variables for meaningful weighting and aggregation in later steps\n")
+    f.write("4. Represents each pillar adequately\n\n")
+    
+    f.write("While this approach may introduce some statistical redundancy, the benefits of theoretical coherence and comprehensive coverage outweigh these concerns for our specific research objectives.\n")
 
-# Add an indicator column to mark variables that should be kept
-for pillar, indicators in kept_indicators.items():
-    for var in pillars[pillar]:
-        if var in df.columns:
-            col_name = f'keep_{var}'
-            final_df[col_name] = var in indicators
+print("Created documentation on theoretical selection approach in Step_4/output/theoretical_selection_approach.md")
 
-# Save final dataset
-final_df.to_csv('Step_4/output/step4_final_dataset.csv', index=False)
-print(f"Final dataset saved to 'Step_4/output/step4_final_dataset.csv'")
-
-# Create a simpler trimmed version with just the selected indicators
-# Ensure communityname is preserved if it exists
-columns_to_keep = ['communityname'] if 'communityname' in df.columns else []
-
-# Add all kept indicators
-for pillar, indicators in kept_indicators.items():
-    columns_to_keep.extend([var for var in indicators if var in df.columns])
-
-# Create and save the trimmed dataset
-if len(columns_to_keep) > 0:
-    trimmed_df = df[columns_to_keep].copy()
-    trimmed_df.to_csv('Step_4/output/step4_trimmed_dataset.csv', index=False)
-    print(f"Trimmed dataset with {len(columns_to_keep)} columns saved to 'Step_4/output/step4_trimmed_dataset.csv'")
-
-print("\nStep 4 completed successfully!")
-print("The data is now ready for normalization in Step 5.") 
+print("\nStep 4 indicator selection and documentation complete.") 
