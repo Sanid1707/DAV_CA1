@@ -1,0 +1,47 @@
+Pillar,Indicator,Importance_Score,Status,Rationale,Weight
+Demographics,population,0.6419080287932493,Drop,"Low communality (0.34), contributes little to principal components.",0.0
+Demographics,racepctblack,0.694526441807351,Keep,Good communality (0.52) and relatively independent from other indicators.,1.0
+Demographics,racePctWhite,0.6672957591375652,Drop,"Low communality (0.42), contributes little to principal components.",0.0
+Demographics,racePctAsian,0.6197872895135166,Drop,"Low communality (0.27), contributes little to principal components.",0.0
+Demographics,racePctHisp,0.6092826911107124,Drop,"Low communality (0.23), contributes little to principal components.",0.0
+Demographics,pctUrban,0.6974679534432074,Keep,Good communality (0.52) and relatively independent from other indicators.,1.0
+Demographics,PctImmigRec5,0.5688761053715335,Drop,"Low communality (0.10), contributes little to principal components.",0.0
+Demographics,PctRecentImmig,0.6267043056529903,Drop,"Low communality (0.29), contributes little to principal components.",0.0
+Demographics,PctNotSpeakEnglWell,0.6341514251698742,Drop,"Low communality (0.31), contributes little to principal components.",0.0
+Income,medIncome,0.6082254935262116,Drop,"Low communality (0.23), contributes little to principal components.",0.0
+Income,pctWSocSec,0.5609934283283793,Drop,"Low communality (0.07), contributes little to principal components.",0.0
+Income,pctWPubAsst,0.6116840374413943,Keep,"Low communality (0.24), contributes little to principal components. Kept to ensure minimum pillar representation and balanced selection.",1.0
+Income,PctPopUnderPov,0.6131206995103362,Keep,"Low communality (0.24), contributes little to principal components. Kept to ensure minimum pillar representation and balanced selection.",1.0
+Income,PctUnemployed,0.6059763411936783,Drop,"Low communality (0.22), contributes little to principal components.",0.0
+Housing,PersPerFam,0.6437344861604669,Drop,"Low communality (0.35), contributes little to principal components.",0.0
+Housing,PctFam2Par,0.6273025121307567,Drop,"Low communality (0.29), contributes little to principal components.",0.0
+Housing,PctLargHouseFam,0.6198717694602167,Drop,"Low communality (0.27), contributes little to principal components.",0.0
+Housing,PersPerRentOccHous,0.6276772087262903,Drop,"Low communality (0.29), contributes little to principal components.",0.0
+Housing,PctPersDenseHous,0.6170453471105382,Drop,"Low communality (0.26), contributes little to principal components.",0.0
+Housing,PctHousOccup,0.6977999978759442,Keep,Good communality (0.53) and relatively independent from other indicators.,1.0
+Housing,PctVacantBoarded,0.619087560788498,Drop,"Low communality (0.26), contributes little to principal components.",0.0
+Housing,PctHousNoPhone,0.6153066076052213,Drop,"Low communality (0.25), contributes little to principal components.",0.0
+Housing,PctWOFullPlumb,0.6215268797321742,Drop,"Low communality (0.27), contributes little to principal components.",0.0
+Housing,OwnOccQrange,0.6686564793922216,Drop,"Low communality (0.43), contributes little to principal components.",0.0
+Housing,RentQrange,0.6600272052652292,Drop,"Low communality (0.40), contributes little to principal components.",0.0
+Housing,NumInShelters,0.6697424176397143,Drop,"Low communality (0.43), contributes little to principal components.",0.0
+Housing,PctSameHouse85,0.7186316525929161,Keep,Good communality (0.60) and relatively independent from other indicators.,1.0
+Housing,PctUsePubTrans,0.6535898755198105,Drop,"Low communality (0.38), contributes little to principal components.",0.0
+Crime,murders,0.5895036963522776,Drop,"Low communality (0.17), contributes little to principal components.",0.0
+Crime,murdPerPop,0.5738878880546807,Drop,"Low communality (0.11), contributes little to principal components.",0.0
+Crime,rapes,0.5693273308991498,Drop,"Low communality (0.10), contributes little to principal components.",0.0
+Crime,rapesPerPop,0.5813115774040201,Drop,"Low communality (0.14), contributes little to principal components.",0.0
+Crime,robberies,0.5758686546652659,Drop,"Low communality (0.12), contributes little to principal components.",0.0
+Crime,robbbPerPop,0.575064157820484,Drop,"Low communality (0.12), contributes little to principal components.",0.0
+Crime,assaults,0.5715716950479464,Drop,"Low communality (0.11), contributes little to principal components.",0.0
+Crime,assaultPerPop,0.6043097123177777,Drop,"Low communality (0.21), contributes little to principal components.",0.0
+Crime,burglaries,0.3699635589325595,Drop,"Low communality (0.10), contributes little to principal components.",0.0
+Crime,burglPerPop,0.5830071566680624,Drop,"Low communality (0.14), contributes little to principal components.",0.0
+Crime,larcenies,0.3762996988894698,Drop,"Low communality (0.12), contributes little to principal components.",0.0
+Crime,larcPerPop,0.43656949780371035,Drop,"Low communality (0.32), contributes little to principal components.",0.0
+Crime,autoTheft,0.5833490549610284,Drop,"Low communality (0.14), contributes little to principal components.",0.0
+Crime,autoTheftPerPop,0.5642098602825831,Drop,"Low communality (0.08), contributes little to principal components.",0.0
+Crime,arsons,0.6303294603982293,Keep,"Low communality (0.30), contributes little to principal components. Kept to ensure minimum pillar representation and balanced selection.",1.0
+Crime,arsonsPerPop,0.6309921369571235,Keep,"Low communality (0.30), contributes little to principal components. Kept to ensure minimum pillar representation and balanced selection.",1.0
+Crime,ViolentCrimesPerPop,0.596136645884085,Drop,"Low communality (0.19), contributes little to principal components.",0.0
+Crime,nonViolPerPop,0.40829821666154553,Drop,"Low communality (0.23), contributes little to principal components.",0.0
