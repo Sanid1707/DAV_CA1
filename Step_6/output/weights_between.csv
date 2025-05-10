@@ -1,0 +1,5 @@
+,EqualWeights,PCAWeights,StakeholderWeights
+DemographicsScore,0.25,0.609464892706744,0.2
+IncomeScore,0.25,0.28017253278460796,0.3
+HousingScore,0.25,0.0756471247013453,0.2
+CrimeScore,0.25,0.03471544980730285,0.3
