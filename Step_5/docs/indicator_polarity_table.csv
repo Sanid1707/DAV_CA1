@@ -1,0 +1,19 @@
+Indicator,Unit,Original Polarity,Polarity After Inversion,Description
+racepctblack,%,↑ good,No change,Percentage of population that is black
+racePctHisp,%,↑ good,No change,Percentage of population that is Hispanic
+pctUrban,%,↑ good,No change,Percentage of people living in urban areas
+PctNotSpeakEnglWell,%,↓ good,Inverted to ↑ good,Percentage who do not speak English well
+medIncome,$,↑ good,No change,Median household income
+pctWPubAsst,%,↓ good,Inverted to ↑ good,Percentage of households with public assistance
+PctPopUnderPov,%,↓ good,Inverted to ↑ good,Percentage of people under the poverty level
+PctUnemployed,%,↓ good,Inverted to ↑ good,Percentage of people unemployed
+PctFam2Par,%,↑ good,No change,Percentage of families headed by two parents
+PctHousOccup,%,↑ good,No change,Percentage of housing occupied
+PctVacantBoarded,%,↓ good,Inverted to ↑ good,Percentage of vacant housing that is boarded up
+PctHousNoPhone,%,↓ good,Inverted to ↑ good,Percentage of households with no phone
+PctSameHouse85,%,↑ good,No change,Percentage of households in same house since 1985
+murdPerPop,per 100k,↓ good,Inverted to ↑ good,Number of murders per 100K population
+robbbPerPop,per 100k,↓ good,Inverted to ↑ good,Number of robberies per 100K population
+autoTheftPerPop,per 100k,↓ good,Inverted to ↑ good,Number of auto thefts per 100K population
+arsonsPerPop,per 100k,↓ good,Inverted to ↑ good,Number of arsons per 100K population
+ViolentCrimesPerPop,per 100k,↓ good,Inverted to ↑ good,Number of violent crimes per 100K population

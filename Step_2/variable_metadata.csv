@@ -1,0 +1,31 @@
+Category,Variable,Rationale
+Socio-economic Disadvantage,PctPopUnderPov,Poverty rate—key strain driver
+Socio-economic Disadvantage,medIncome,Median household income—wealth proxy
+Socio-economic Disadvantage,PctUnemployed,Unemployment rate—economic stress
+Socio-economic Disadvantage,PctLess9thGrade,Very low education—limits mobility
+Socio-economic Disadvantage,PctNotHSGrad,Low completion rate—correlates with crime
+Residential Instability & Family Structure,PctSameHouse85,% in same home since 1985—inverse instability
+Residential Instability & Family Structure,PctForeignBorn,% immigrants—turnover proxy
+Residential Instability & Family Structure,PctImmigRec5,% arrived last 5 yrs—acute social change
+Residential Instability & Family Structure,PctFam2Par,% two-parent families—youth supervision
+Residential Instability & Family Structure,PctKids2Par,% children in two-parent homes
+Ethnic & Cultural Heterogeneity,racepctblack,% Black residents—demographic mix
+Ethnic & Cultural Heterogeneity,racePctWhite,% White
+Ethnic & Cultural Heterogeneity,racePctAsian,% Asian
+Ethnic & Cultural Heterogeneity,racePctHisp,% Hispanic/Latino
+Housing & Density,PctHousOwnOcc,Owner-occupancy—investment & stability proxy
+Housing & Density,PctHousNoPhone,% without phone—material deprivation indicator
+Housing & Density,PctVacantBoarded,% boarded homes—neighbourhood decay signal
+Housing & Density,PopDens,Density—target availability & anonymity factor
+Housing & Density,MedYrHousBuilt,Housing-stock age—physical environment factor
+Crime Outcomes,murdPerPop,Murders per population—violent crime gauge
+Crime Outcomes,robbbPerPop,Robberies per population
+Crime Outcomes,assaultPerPop,Assaults per population
+Crime Outcomes,larcPerPop,Larcenies per population
+Crime Outcomes,autoTheftPerPop,Vehicle theft per population
+Crime Outcomes,arsonsPerPop,Arsons per population
+Human Capital & Mobility,PctSameCity85,% in same city since 1985—city-level stability proxy
+Human Capital & Mobility,PctSameState85,% in same state since 1985—state-level stability
+Human Capital & Mobility,PctBSorMore,% with bachelor's degree or higher—education level
+Human Capital & Mobility,PctEmploy,Employment rate—labour-market engagement
+Human Capital & Mobility,PctWorkMom,% working mothers—dual-earner family structure proxy

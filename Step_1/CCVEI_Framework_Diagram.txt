@@ -1,0 +1,76 @@
+===============================================================================
+          COMMUNITY CRIME VULNERABILITY AND EXPOSURE INDEX (CCVEI)
+===============================================================================
+
+┌───────────────────────────────────────────────────────────────────────────┐
+│                       THEORETICAL FOUNDATIONS                              │
+├───────────────────────────────────────────────────────────────────────────┤
+│ ● Social Vulnerability Theory (Cutter et al., 2003)                       │
+│ ● Economic Strain Theory (Merton, 1938; Agnew, 1992)                      │
+│ ● Social Disorganization Theory (Shaw & McKay, 1942)                      │
+│ ● Crime Pattern Theory (Brantingham & Brantingham, 1993)                  │
+└───────────────────────────────────────────────────────────────────────────┘
+
+┌───────────────────────────────────────────────────────────────────────────┐
+│                          KEY PILLARS                                       │
+├────────────────────┬────────────────────┬────────────────────┬────────────┤
+│    DEMOGRAPHICS    │      INCOME        │      HOUSING       │   CRIME    │
+├────────────────────┼────────────────────┼────────────────────┼────────────┤
+│ ● Population       │ ● Income levels    │ ● Housing values   │ ● Violent  │
+│   density          │ ● Poverty rates    │ ● Vacancy rates    │   crime    │
+│ ● Age structure    │ ● Unemployment     │ ● Ownership rates  │ ● Property │
+│ ● Family structure │   rates            │ ● Housing quality  │   crime    │
+│ ● Race/ethnicity   │ ● Public assistance│ ● Housing age      │ ● Drug     │
+│                    │                    │                    │   crime    │
+└────────────────────┴────────────────────┴────────────────────┴────────────┘
+           │                  │                  │                  │
+           ▼                  ▼                  ▼                  ▼
+┌────────────────────┐ ┌────────────────────┐ ┌────────────────────┐ ┌────────────────────┐
+│   VULNERABILITY    │ │   VULNERABILITY    │ │   VULNERABILITY    │ │      EXPOSURE      │
+│      FACTOR        │ │      FACTOR        │ │      FACTOR        │ │       FACTOR       │
+└────────────────────┘ └────────────────────┘ └────────────────────┘ └────────────────────┘
+           │                  │                  │                  │
+           └──────────────────┼──────────────────┘                  │
+                              │                                     │
+┌─────────────────────────────▼─────────────────────────┐ ┌─────────▼─────────────────────┐
+│               SOCIOECONOMIC VULNERABILITY             │ │       CRIME EXPOSURE          │
+└─────────────────────────────┬─────────────────────────┘ └─────────┬─────────────────────┘
+                              │                                     │
+                              └─────────────────┬─────────────────────┐
+                                                │                     │
+                              ┌─────────────────▼─────────────────────┐
+                              │                                       │
+                              │    COMMUNITY CRIME VULNERABILITY      │
+                              │        AND EXPOSURE INDEX             │
+                              │                                       │
+                              └───────────────────────────────────────┘
+
+┌───────────────────────────────────────────────────────────────────────────┐
+│                        STAKEHOLDERS & APPLICATIONS                         │
+├───────────────────────────────────────────────────────────────────────────┤
+│ ● MUNICIPAL GOVERNMENTS: Resource allocation, intervention planning        │
+│ ● LAW ENFORCEMENT: Strategic deployment, prevention programs              │
+│ ● COMMUNITY ORGANIZATIONS: Program development, grant applications        │
+│ ● INSURANCE COMPANIES: Risk assessment, premium determination             │
+│ ● RESEARCHERS: Crime pattern analysis, community resilience studies       │
+│ ● RESIDENTS: Relocation decisions, community improvement initiatives      │
+└───────────────────────────────────────────────────────────────────────────┘
+
+                AVOIDING THE CIRCULAR REFERENCE PROBLEM:
+             REFRAMING "CRIME PREDICTION" TO "RISK ASSESSMENT"
+
+┌───────────────────────────────────────────────────────────────────────────┐
+│ Traditional Crime Indices                │ CCVEI Approach                 │
+├───────────────────────────────────────────────────────────────────────────┤
+│ ● Predict crime using crime data         │ ● Assess overall risk profile  │
+│   (circular reference)                   │   combining vulnerability AND   │
+│                                          │   exposure factors              │
+│ ● Focus on either socioeconomic          │                                │
+│   factors OR crime statistics            │ ● Explicitly integrate both    │
+│   separately                             │   current crime conditions and  │
+│                                          │   vulnerability factors         │
+│ ● Often lack theoretical                 │                                │
+│   integration                            │ ● Ground each pillar in        │
+│                                          │   established criminological    │
+│                                          │   theory                        │
+└───────────────────────────────────────────────────────────────────────────┘ 

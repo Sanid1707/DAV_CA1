@@ -1,0 +1,19 @@
+Pillar,Indicator,Importance_Score,Status,Rationale,Weight
+Demographics,racepctblack,1.0,Keep,Theoretically important variable for our crime risk framework based on Social Disorganization Theory - racial/ethnic heterogeneity.,1.0
+Demographics,racePctHisp,1.0,Keep,Theoretically important variable for our crime risk framework based on Social Disorganization Theory - racial/ethnic heterogeneity.,1.0
+Demographics,pctUrban,1.0,Keep,Theoretically important variable for our crime risk framework based on Shaw & McKay's work on urbanization and crime.,1.0
+Demographics,PctNotSpeakEnglWell,1.0,Keep,Theoretically important variable for our crime risk framework based on social isolation factors that may reduce collective efficacy.,1.0
+Income,PctPopUnderPov,1.0,Keep,Theoretically important variable for our crime risk framework based on concentrated disadvantage as a key predictor in Social Disorganization Theory.,1.0
+Income,medIncome,1.0,Keep,Theoretically important variable for our crime risk framework based on economic capacity for guardianship in Routine Activity Theory.,1.0
+Income,pctWPubAsst,1.0,Keep,Theoretically important variable for our crime risk framework based on economic vulnerability and dependency markers.,1.0
+Income,PctUnemployed,1.0,Keep,Theoretically important variable for our crime risk framework based on unemployment as a driver of motivated offenders in Routine Activity Theory.,1.0
+Housing,PctHousOccup,1.0,Keep,Theoretically important variable for our crime risk framework based on occupancy as a deterrent to crime opportunities.,1.0
+Housing,PctSameHouse85,1.0,Keep,Theoretically important variable for our crime risk framework based on residential stability/turnover central to Social Disorganization Theory.,1.0
+Housing,PctVacantBoarded,1.0,Keep,Theoretically important variable for our crime risk framework based on physical disorder as a criminogenic factor.,1.0
+Housing,PctHousNoPhone,1.0,Keep,Theoretically important variable for our crime risk framework based on reduced guardianship capability (ability to call for help).,1.0
+Housing,PctFam2Par,1.0,Keep,Theoretically important variable for our crime risk framework based on informal social control mechanisms via family structure.,1.0
+Crime,ViolentCrimesPerPop,1.0,Keep,Theoretically important variable for our crime risk framework based on comprehensive violent crime measure as a key outcome variable.,1.0
+Crime,murdPerPop,1.0,Keep,Theoretically important variable for our crime risk framework based on murder as the most serious violent crime indicator.,1.0
+Crime,robbbPerPop,1.0,Keep,Theoretically important variable for our crime risk framework based on robbery as a crime that spans both property and violent domains.,1.0
+Crime,autoTheftPerPop,1.0,Keep,Theoretically important variable for our crime risk framework based on auto theft as a key property crime indicator.,1.0
+Crime,arsonsPerPop,1.0,Keep,Theoretically important variable for our crime risk framework based on arson as an indicator of destructive property crime.,1.0

@@ -1,0 +1,56 @@
+
+
+    Number of components to keep for Demographics pillar: 3
+    
+    Rationale:
+    - Kaiser criterion (eigenvalue > 1): 3 component(s)
+    - 60% cumulative variance criterion: 3 component(s)
+    - Scree plot elbow: visual inspection shows an elbow at component 4
+    - Conceptual interpretability: The retained components can be interpreted as follows:
+    
+    PC1 (37.5% variance): Positively influenced by PctRecentImmig, PctNotSpeakEnglWell, racePctHisp; 
+    PC2 (20.2% variance): Positively influenced by racepctblack; Negatively influenced by racePctWhite, racePctAsian
+    PC3 (13.9% variance): Positively influenced by PctNotSpeakEnglWell; Negatively influenced by pctUrban, population
+================================================================================
+
+
+    Number of components to keep for Income pillar: 1
+    
+    Rationale:
+    - Kaiser criterion (eigenvalue > 1): 1 component(s)
+    - 60% cumulative variance criterion: 1 component(s)
+    - Scree plot elbow: visual inspection shows an elbow at component 2
+    - Conceptual interpretability: The retained components can be interpreted as follows:
+    
+    PC1 (71.0% variance): Positively influenced by medIncome; Negatively influenced by PctPopUnderPov, pctWPubAsst
+================================================================================
+
+
+    Number of components to keep for Housing pillar: 5
+    
+    Rationale:
+    - Kaiser criterion (eigenvalue > 1): 5 component(s)
+    - 60% cumulative variance criterion: 4 component(s)
+    - Scree plot elbow: visual inspection shows an elbow at component 6
+    - Conceptual interpretability: The retained components can be interpreted as follows:
+    
+    PC1 (30.5% variance): Positively influenced by PctPersDenseHous, PctLargHouseFam, PctHousNoPhone; 
+    PC2 (16.7% variance): Negatively influenced by PersPerFam, RentQrange, OwnOccQrange
+    PC3 (12.6% variance): Negatively influenced by PctUsePubTrans, NumInShelters, OwnOccQrange
+    PC4 (9.9% variance): Positively influenced by PctSameHouse85, PctVacantBoarded; Negatively influenced by OwnOccQrange
+    PC5 (7.2% variance): Positively influenced by PctWOFullPlumb; Negatively influenced by PctHousOccup, NumInShelters
+================================================================================
+
+
+    Number of components to keep for Crime pillar: 3
+    
+    Rationale:
+    - Kaiser criterion (eigenvalue > 1): 3 component(s)
+    - 60% cumulative variance criterion: 1 component(s)
+    - Scree plot elbow: visual inspection shows an elbow at component 4
+    - Conceptual interpretability: The retained components can be interpreted as follows:
+    
+    PC1 (63.6% variance): Positively influenced by burglaries, robberies, assaults; 
+    PC2 (8.1% variance): Positively influenced by arsons; Negatively influenced by larcPerPop, nonViolPerPop
+    PC3 (5.6% variance): Positively influenced by arsonsPerPop, arsons, larcPerPop; 
+================================================================================
